@@ -1,10 +1,13 @@
 package com.claimcheck.backend.dto;
 
+import java.util.List;
+
 public class ClaimAnalysisResponse {
 
     private Long claimId;
     private String statement;
     private String claimType;
+    private List<DecomposedClaim> decomposedClaims;
     private String verdict;
     private double confidence;
     private String explanation;
@@ -13,6 +16,7 @@ public class ClaimAnalysisResponse {
             Long claimId,
             String statement,
             String claimType,
+            List<DecomposedClaim> decomposedClaims,
             String verdict,
             double confidence,
             String explanation) {
@@ -20,6 +24,7 @@ public class ClaimAnalysisResponse {
         this.claimId = claimId;
         this.statement = statement;
         this.claimType = claimType;
+        this.decomposedClaims = decomposedClaims;
         this.verdict = verdict;
         this.confidence = confidence;
         this.explanation = explanation;
@@ -35,6 +40,10 @@ public class ClaimAnalysisResponse {
 
     public String getClaimType() {
         return claimType;
+    }
+
+    public List<DecomposedClaim> getDecomposedClaims() {
+        return decomposedClaims;
     }
 
     public String getVerdict() {
