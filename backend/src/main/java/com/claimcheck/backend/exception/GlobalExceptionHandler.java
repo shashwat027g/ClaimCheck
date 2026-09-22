@@ -28,4 +28,18 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST)
                 .body(errors);
     }
+
+    @ExceptionHandler(ClaimNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleClaimNotFound(
+            ClaimNotFoundException exception) {
+
+        Map<String, String> error = new HashMap<>();
+
+        error.put("error", "CLAIM_NOT_FOUND");
+        error.put("message", exception.getMessage());
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(error);
+    }
 }

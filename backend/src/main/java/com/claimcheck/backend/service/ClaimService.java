@@ -11,6 +11,7 @@ import com.claimcheck.backend.repository.ClaimRepository;
 import org.springframework.stereotype.Service;
 import com.claimcheck.backend.entity.VerificationHistory;
 import com.claimcheck.backend.repository.VerificationHistoryRepository;
+import com.claimcheck.backend.exception.ClaimNotFoundException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -159,8 +160,8 @@ public class ClaimService {
     public ClaimAnalysisResponse analyzeExistingClaim(Long claimId) {
 
         Claim claim = claimRepository.findById(claimId)
-                .orElseThrow(() ->
-                        new IllegalArgumentException("Claim not found"));
+        .orElseThrow(() ->
+                new ClaimNotFoundException("Claim not found with id: " + claimId));
 
         ClaimType claimType =
                 claimClassifierService.classify(claim.getStatement());
