@@ -7,6 +7,9 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.claimcheck.backend.entity.Claim;
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/claims")
 public class ClaimController {
@@ -24,5 +27,23 @@ public class ClaimController {
         ClaimAnalysisResponse response = claimService.analyzeClaim(request);
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{claimId}/analyze")
+    public ResponseEntity<ClaimAnalysisResponse> analyzeExistingClaim(
+            @PathVariable Long claimId) {
+
+        ClaimAnalysisResponse response =
+            claimService.analyzeExistingClaim(claimId);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/history")
+    public ResponseEntity<List<Claim>> getClaimHistory() {
+
+        List<Claim> claims = claimService.getClaimHistory();
+
+        return ResponseEntity.ok(claims);
     }
 }

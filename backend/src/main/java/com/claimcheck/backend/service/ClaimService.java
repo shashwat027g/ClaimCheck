@@ -19,17 +19,20 @@ public class ClaimService {
     private final ClaimClassifierService claimClassifierService;
     private final ClaimDecompositionService claimDecompositionService;
     private final EvidenceRetrievalService evidenceRetrievalService;
+    private final EvidenceComparisonService evidenceComparisonService;
 
     public ClaimService(
             ClaimRepository claimRepository,
             ClaimClassifierService claimClassifierService,
             ClaimDecompositionService claimDecompositionService,
-            EvidenceRetrievalService evidenceRetrievalService) {
+            EvidenceRetrievalService evidenceRetrievalService,
+            EvidenceComparisonService evidenceComparisonService) {
 
         this.claimRepository = claimRepository;
         this.claimClassifierService = claimClassifierService;
         this.claimDecompositionService = claimDecompositionService;
         this.evidenceRetrievalService = evidenceRetrievalService;
+        this.evidenceComparisonService = evidenceComparisonService;
     }
 
     public ClaimAnalysisResponse analyzeClaim(ClaimRequest request) {
@@ -60,27 +63,23 @@ public class ClaimService {
 
         // Retrieve evidence connected to this claim
         List<Evidence> evidenceList =
-                evidenceRetrievalService.getEvidenceForClaim(savedClaim.getId());
+                evidenceRetrievalService.getEvidenceForClaim(
+                        savedClaim.getId()
+                );
 
-        // Temporary verdict until evidence comparison is implemented
-        String verdict = "Insufficient evidence";
-        double confidence = 0.0;
+        // Compare claim with retrieved evidence
+        String verdict =
+                evidenceComparisonService.compare(
+                        savedClaim.getStatement(),
+                        evidenceList
+                );
 
-        String explanation;
+        // Temporary confidence calculation
+        double confidence = calculateConfidence(evidenceList, verdict);
 
-        if (evidenceList.isEmpty()) {
-
-            explanation =
-                    "The claim has been classified and decomposed, "
-                    + "but no evidence has been retrieved yet.";
-
-        } else {
-
-            explanation =
-                    evidenceList.size()
-                    + " evidence item(s) were retrieved. "
-                    + "Evidence comparison has not been implemented yet.";
-        }
+        // Generate explanation
+        String explanation =
+                generateExplanation(evidenceList, verdict);
 
         return new ClaimAnalysisResponse(
                 savedClaim.getId(),
@@ -90,6 +89,113 @@ public class ClaimService {
                 verdict,
                 confidence,
                 explanation
+        );
+    }
+
+    private double calculateConfidence(
+            List<Evidence> evidenceList,
+            String verdict) {
+
+        if (evidenceList.isEmpty()) {
+            return 0.0;
+        }
+
+        if ("SUPPORTED".equals(verdict)) {
+            return 0.80;
+        }
+
+        if ("CONTRADICTED".equals(verdict)) {
+            return 0.80;
+        }
+
+        if ("MIXED".equals(verdict)) {
+            return 0.60;
+        }
+
+        return 0.30;
+    }
+
+    private String generateExplanation(
+            List<Evidence> evidenceList,
+            String verdict) {
+
+        if (evidenceList.isEmpty()) {
+            return "No evidence is available for comparison.";
+        }
+
+        return switch (verdict) {
+
+            case "SUPPORTED" ->
+                    "The available evidence contains information that supports the claim.";
+
+            case "CONTRADICTED" ->
+                    "The available evidence contains information that contradicts the claim.";
+
+            case "MIXED" ->
+                    "The available evidence contains both supporting and contradicting information.";
+
+            default ->
+                    "The available evidence does not provide enough information to verify the claim.";
+        };
+    }
+
+    public ClaimAnalysisResponse analyzeExistingClaim(Long claimId) {
+
+        Claim claim = claimRepository.findById(claimId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Claim not found"));
+
+        ClaimType claimType =
+                claimClassifierService.classify(claim.getStatement());
+
+        List<String> claimParts =
+                claimDecompositionService.decompose(claim.getStatement());
+
+        List<DecomposedClaim> decomposedClaims = new ArrayList<>();
+
+        for (int i = 0; i < claimParts.size(); i++) {
+
+            decomposedClaims.add(
+                    new DecomposedClaim(
+                           i + 1,
+                           claimParts.get(i)
+                   )
+           );
+        }
+        
+        List<Evidence> evidenceList =
+                evidenceRetrievalService.getEvidenceForClaim(
+                        claim.getId()
+                );
+
+        String verdict =
+                evidenceComparisonService.compare(
+                        claim.getStatement(),
+                        evidenceList
+                );
+
+        double confidence =
+                calculateConfidence(evidenceList, verdict);
+
+        String explanation =
+                generateExplanation(evidenceList, verdict);
+
+        return new ClaimAnalysisResponse(
+                claim.getId(),
+                claim.getStatement(),
+                claimType.name(),
+                decomposedClaims,
+                verdict,
+                confidence,
+                explanation
+        );  
+    }
+
+    public List<Claim> getClaimHistory() {
+
+        return claimRepository.findAll(
+            org.springframework.data.domain.Sort
+                    .by(org.springframework.data.domain.Sort.Direction.DESC, "id")
         );
     }
 }
