@@ -88,6 +88,16 @@ public class ClaimService {
         String explanation =
                 generateExplanation(evidenceList, verdict);
 
+        VerificationHistory history = new VerificationHistory(
+                claim,
+                verdict,
+                confidence,
+                explanation,
+                LocalDateTime.now()
+        );
+
+        verificationHistoryRepository.save(history);
+
         return new ClaimAnalysisResponse(
                 savedClaim.getId(),
                 savedClaim.getStatement(),
