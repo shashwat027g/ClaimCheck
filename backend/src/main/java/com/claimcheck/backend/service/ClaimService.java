@@ -1,5 +1,6 @@
 package com.claimcheck.backend.service;
 
+import com.claimcheck.backend.dto.VerificationHistoryResponse;
 import com.claimcheck.backend.dto.ClaimAnalysisResponse;
 import com.claimcheck.backend.dto.ClaimRequest;
 import com.claimcheck.backend.dto.DecomposedClaim;
@@ -8,7 +9,10 @@ import com.claimcheck.backend.entity.ClaimType;
 import com.claimcheck.backend.entity.Evidence;
 import com.claimcheck.backend.repository.ClaimRepository;
 import org.springframework.stereotype.Service;
+import com.claimcheck.backend.entity.VerificationHistory;
+import com.claimcheck.backend.repository.VerificationHistoryRepository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,22 +21,25 @@ public class ClaimService {
 
     private final ClaimRepository claimRepository;
     private final ClaimClassifierService claimClassifierService;
+    private final VerificationHistoryRepository verificationHistoryRepository;
     private final ClaimDecompositionService claimDecompositionService;
     private final EvidenceRetrievalService evidenceRetrievalService;
     private final EvidenceComparisonService evidenceComparisonService;
 
     public ClaimService(
-            ClaimRepository claimRepository,
-            ClaimClassifierService claimClassifierService,
-            ClaimDecompositionService claimDecompositionService,
-            EvidenceRetrievalService evidenceRetrievalService,
-            EvidenceComparisonService evidenceComparisonService) {
+        ClaimRepository claimRepository,
+        ClaimClassifierService claimClassifierService,
+        ClaimDecompositionService claimDecompositionService,
+        EvidenceRetrievalService evidenceRetrievalService,
+        EvidenceComparisonService evidenceComparisonService,
+        VerificationHistoryRepository verificationHistoryRepository) {
 
         this.claimRepository = claimRepository;
         this.claimClassifierService = claimClassifierService;
         this.claimDecompositionService = claimDecompositionService;
         this.evidenceRetrievalService = evidenceRetrievalService;
         this.evidenceComparisonService = evidenceComparisonService;
+        this.verificationHistoryRepository = verificationHistoryRepository;
     }
 
     public ClaimAnalysisResponse analyzeClaim(ClaimRequest request) {
@@ -180,6 +187,16 @@ public class ClaimService {
         String explanation =
                 generateExplanation(evidenceList, verdict);
 
+        VerificationHistory history = new VerificationHistory(
+                claim,
+                verdict,
+                confidence,
+                explanation,
+                LocalDateTime.now()
+        );
+
+        verificationHistoryRepository.save(history);
+
         return new ClaimAnalysisResponse(
                 claim.getId(),
                 claim.getStatement(),
@@ -197,5 +214,24 @@ public class ClaimService {
             org.springframework.data.domain.Sort
                     .by(org.springframework.data.domain.Sort.Direction.DESC, "id")
         );
+    }
+
+    public List<VerificationHistoryResponse> getVerificationHistory(Long claimId) {
+
+        List<VerificationHistory> history =
+                verificationHistoryRepository
+                        .findByClaimIdOrderByVerifiedAtDesc(claimId);
+
+        return history.stream()
+                .map(record -> new VerificationHistoryResponse(
+                        record.getId(),
+                        record.getClaim().getId(),
+                        record.getClaim().getStatement(),
+                        record.getVerdict(),
+                        record.getConfidence(),
+                        record.getExplanation(),
+                        record.getVerifiedAt()
+                ))
+                .toList();
     }
 }

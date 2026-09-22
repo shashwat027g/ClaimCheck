@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.claimcheck.backend.service.SourceCredibilityService;
+import com.claimcheck.backend.dto.SourceResponse;
 
 import java.util.List;
 
@@ -65,11 +66,21 @@ public class SourceController {
     }
 
     @GetMapping("/{claimId}")
-    public ResponseEntity<List<Source>> getSources(
+    public ResponseEntity<List<SourceResponse>> getSources(
             @PathVariable Long claimId) {
 
-        List<Source> sources =
-                sourceRepository.findByClaimId(claimId);
+        List<SourceResponse> sources =
+                sourceRepository.findByClaimId(claimId)
+                        .stream()
+                        .map(source -> new SourceResponse(
+                                source.getId(),
+                                source.getClaim().getId(),
+                                source.getName(),
+                                source.getUrl(),
+                                source.getSourceType(),
+                                source.getCredibilityScore()
+                        ))
+                        .toList();
 
         return ResponseEntity.ok(sources);
     }

@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.claimcheck.backend.dto.EvidenceResponse;
 
 import java.util.List;
 
@@ -56,11 +57,21 @@ public class EvidenceController {
     }
 
     @GetMapping("/{claimId}")
-    public ResponseEntity<List<Evidence>> getEvidence(
+    public ResponseEntity<List<EvidenceResponse>> getEvidence(
             @PathVariable Long claimId) {
 
-        List<Evidence> evidence =
-                evidenceRepository.findByClaimId(claimId);
+        List<EvidenceResponse> evidence =
+                evidenceRepository.findByClaimId(claimId)
+                        .stream()
+                        .map(item -> new EvidenceResponse(
+                                item.getId(),
+                                item.getClaim().getId(),
+                                item.getContent(),
+                                item.getUrl(),
+                                item.getTitle(),
+                                item.getSourceName()
+                        ))
+                        .toList();
 
         return ResponseEntity.ok(evidence);
     }

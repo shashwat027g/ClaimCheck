@@ -7,6 +7,8 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.claimcheck.backend.dto.VerificationHistoryResponse;
+
 import com.claimcheck.backend.entity.Claim;
 import java.util.List;
 
@@ -45,5 +47,15 @@ public class ClaimController {
         List<Claim> claims = claimService.getClaimHistory();
 
         return ResponseEntity.ok(claims);
+    }
+
+    @GetMapping("/{claimId}/history")
+    public ResponseEntity<List<VerificationHistoryResponse>> getVerificationHistory(
+            @PathVariable Long claimId) {
+
+        List<VerificationHistoryResponse> history =
+                claimService.getVerificationHistory(claimId);
+
+        return ResponseEntity.ok(history);
     }
 }
