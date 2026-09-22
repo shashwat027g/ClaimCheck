@@ -5,6 +5,7 @@ import com.claimcheck.backend.dto.ClaimRequest;
 import com.claimcheck.backend.dto.DecomposedClaim;
 import com.claimcheck.backend.entity.Claim;
 import com.claimcheck.backend.entity.ClaimType;
+import com.claimcheck.backend.entity.Evidence;
 import com.claimcheck.backend.repository.ClaimRepository;
 import org.springframework.stereotype.Service;
 
@@ -17,15 +18,18 @@ public class ClaimService {
     private final ClaimRepository claimRepository;
     private final ClaimClassifierService claimClassifierService;
     private final ClaimDecompositionService claimDecompositionService;
+    private final EvidenceRetrievalService evidenceRetrievalService;
 
     public ClaimService(
             ClaimRepository claimRepository,
             ClaimClassifierService claimClassifierService,
-            ClaimDecompositionService claimDecompositionService) {
+            ClaimDecompositionService claimDecompositionService,
+            EvidenceRetrievalService evidenceRetrievalService) {
 
         this.claimRepository = claimRepository;
         this.claimClassifierService = claimClassifierService;
         this.claimDecompositionService = claimDecompositionService;
+        this.evidenceRetrievalService = evidenceRetrievalService;
     }
 
     public ClaimAnalysisResponse analyzeClaim(ClaimRequest request) {
@@ -38,7 +42,7 @@ public class ClaimService {
         ClaimType claimType =
                 claimClassifierService.classify(savedClaim.getStatement());
 
-        // Decompose the claim into individual claims
+        // Decompose the claim
         List<String> claimParts =
                 claimDecompositionService.decompose(savedClaim.getStatement());
 
@@ -54,13 +58,29 @@ public class ClaimService {
             );
         }
 
-        // Temporary analysis result
+        // Retrieve evidence connected to this claim
+        List<Evidence> evidenceList =
+                evidenceRetrievalService.getEvidenceForClaim(savedClaim.getId());
+
+        // Temporary verdict until evidence comparison is implemented
         String verdict = "Insufficient evidence";
         double confidence = 0.0;
 
-        String explanation =
-                "The claim has been received, classified, and decomposed, "
-                + "but evidence verification has not been performed yet.";
+        String explanation;
+
+        if (evidenceList.isEmpty()) {
+
+            explanation =
+                    "The claim has been classified and decomposed, "
+                    + "but no evidence has been retrieved yet.";
+
+        } else {
+
+            explanation =
+                    evidenceList.size()
+                    + " evidence item(s) were retrieved. "
+                    + "Evidence comparison has not been implemented yet.";
+        }
 
         return new ClaimAnalysisResponse(
                 savedClaim.getId(),
