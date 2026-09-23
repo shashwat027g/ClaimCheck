@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ClaimCheck — AI Claim Verification</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="app-shell">
+
+    <!-- TOP BAR -->
+    <header class="topbar">
+      <a class="brand" href="#home" aria-label="ClaimCheck home">
+        <span class="brand-mark">✓</span>
+        <span class="brand-name">Claim<span>Check</span></span>
+      </a>
+
+      <div class="brand-tagline">
+        <strong>AI-Powered Claim Verification</strong>
+        <span>for a More Informed World</span>
+      </div>
+
+      <nav class="top-nav" aria-label="Main navigation">
+        <a class="nav-link active" href="#home"><span>⌂</span> Home</a>
+        <a class="nav-link" href="#history"><span>◷</span> History</a>
+        <a class="nav-link" href="#about"><span>ⓘ</span> About</a>
+      </nav>
+
+      <button class="icon-button" id="themeButton" type="button" aria-label="Toggle appearance">☼</button>
+      <button class="profile-button" type="button" aria-label="Profile">●</button>
+    </header>
+
+    <div class="workspace">
+
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <nav class="side-nav">
+          <a class="side-link active" href="#home"><span class="side-icon">⌂</span> Home</a>
+          <a class="side-link" href="#history"><span class="side-icon">◷</span> History</a>
+          <a class="side-link" href="#about"><span class="side-icon">ⓘ</span> About</a>
+        </nav>
+
+        <div class="sidebar-tip">
+          <div class="tip-spark">✦</div>
+          <strong>Better evidence.<br />Clearer truth.</strong>
+          <div class="tip-line"></div>
+          <div class="tip-wave"></div>
+        </div>
+      </aside>
+
+      <main class="main-content">
+
+        <!-- HERO -->
+        <section class="hero" id="home">
+          <div class="hero-copy">
+            <div class="eyebrow"><span>✦</span> AI CLAIM VERIFICATION</div>
+            <h1>Think Deeper.<br /><span>Verify Smarter.</span></h1>
+            <p>
+              ClaimCheck analyzes claims, finds evidence, and provides
+              transparent, explainable results — so you can understand the evidence.
+            </p>
+
+            <!-- CLAIM INPUT -->
+            <div class="claim-card" id="claimCard">
+              <div class="claim-heading">
+                <div class="claim-heading-icon">✦</div>
+                <div>
+                  <h2>Enter a Claim to Verify</h2>
+                  <p>Type a statement, fact, or claim you want to verify.</p>
+                </div>
+              </div>
+
+              <div class="textarea-wrap">
+                <textarea id="claimInput" maxlength="500"
+                  placeholder="e.g. The Earth is round."></textarea>
+                <button id="analyzeButton" class="analyze-button" type="button">
+                  <span class="button-spark">✦</span>
+                  <span>Analyze Claim</span>
+                  <span class="button-arrow">→</span>
+                </button>
+              </div>
+
+              <div class="claim-meta">
+                <span id="characterCount">0/500</span>
+              </div>
+
+              <div class="examples">
+                <span>Try these examples:</span>
+                <button class="example-chip" data-claim="The Earth is round.">The Earth is flat.</button>
+                <button class="example-chip" data-claim="Vaccines cause autism.">Vaccines cause autism.</button>
+                <button class="example-chip" data-claim="Climate change is a hoax.">Climate change is a hoax.</button>
+              </div>
+
+              <div id="errorMessage" class="error-message" role="alert"></div>
+            </div>
+          </div>
+
+          <!-- AI VISUAL -->
+          <div class="hero-visual" aria-hidden="true">
+            <div class="orb-glow"></div>
+            <div class="orbit orbit-one"></div>
+            <div class="orbit orbit-two"></div>
+            <div class="orbit orbit-three"></div>
+
+            <div class="ai-orb">
+              <div class="orb-inner">✓</div>
+            </div>
+
+            <div class="floating-card card-doc">▤</div>
+            <div class="floating-card card-image">▧</div>
+            <div class="floating-card card-web">◎</div>
+            <div class="floating-card card-file">▤</div>
+
+            <div class="evidence-note">Evidence<br />leads to<br />truth <span>↙</span></div>
+          </div>
+        </section>
+
+        <!-- LOADING / VERIFICATION -->
+        <section id="loadingSection" class="loading-section" hidden>
+          <div class="verification-loader">
+            <div class="scanner-orb">
+              <div class="scanner-ring ring-one"></div>
+              <div class="scanner-ring ring-two"></div>
+              <div class="scanner-core">✦</div>
+            </div>
+            <div class="scan-copy">
+              <span class="scan-kicker">CLAIMCHECK AI</span>
+              <h2 id="scanTitle">Analyzing claim</h2>
+              <p id="scanDescription">Understanding the statement and preparing evidence checks.</p>
+            </div>
+            <div class="scan-progress">
+              <div class="scan-progress-track"><span id="scanProgressBar"></span></div>
+              <span id="scanProgressValue">0%</span>
+            </div>
+            <div class="scan-steps">
+              <div class="scan-step active">01 <span>Analyze</span></div>
+              <div class="scan-step">02 <span>Decompose</span></div>
+              <div class="scan-step">03 <span>Evidence</span></div>
+              <div class="scan-step">04 <span>Verify</span></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- RESULT -->
+        <section id="resultSection" class="result-section" hidden>
+          <div class="section-heading">
+            <div>
+              <span class="section-kicker">VERIFICATION RESULT</span>
+              <h2>Claim Analysis</h2>
+            </div>
+            <button class="secondary-button" id="newClaimButton" type="button">Verify another →</button>
+          </div>
+
+          <div class="result-grid">
+            <article class="result-card verdict-card">
+              <span class="result-label">VERDICT</span>
+              <div id="verdict" class="verdict-badge">INSUFFICIENT EVIDENCE</div>
+              <p id="explanation">No result yet.</p>
+              <div class="confidence">
+                <div class="confidence-top">
+                  <span>Confidence</span>
+                  <strong id="confidenceValue">0%</strong>
+                </div>
+                <div class="confidence-track"><span id="confidenceProgress"></span></div>
+              </div>
+            </article>
+
+            <article class="result-card details-card">
+              <span class="result-label">CLAIM DETAILS</span>
+              <div class="detail-row"><span>Claim type</span><strong id="claimType">—</strong></div>
+              <div class="detail-row"><span>Claim ID</span><strong id="claimId">—</strong></div>
+            </article>
+          </div>
+
+          <div class="result-columns">
+            <article class="content-card">
+              <div class="content-card-heading">
+                <span class="mini-icon">01</span>
+                <div><h3>Decomposed Claims</h3><p>Key statements identified inside the claim.</p></div>
+              </div>
+              <div id="decomposedClaims" class="decomposed-list"></div>
+            </article>
+
+            <article class="content-card">
+              <div class="content-card-heading">
+                <span class="mini-icon">02</span>
+                <div><h3>Evidence</h3><p>Evidence used to explain the verification.</p></div>
+              </div>
+              <div id="evidenceContainer" class="evidence-list"></div>
+            </article>
+          </div>
+
+          <article class="content-card sources-card">
+            <div class="content-card-heading">
+              <span class="mini-icon">03</span>
+              <div><h3>Sources</h3><p>Reference information for the result.</p></div>
+            </div>
+            <div id="sourcesContainer" class="sources-list"></div>
+          </article>
+        </section>
+
+        <!-- HISTORY -->
+        <section id="history" class="history-section">
+          <div class="history-card">
+            <div class="history-header">
+              <div class="history-title-wrap">
+                <div class="history-icon">◷</div>
+                <div>
+                  <h2>Previous Verifications</h2>
+                  <p>Your recent claim analysis history</p>
+                </div>
+              </div>
+              <button id="clearHistoryButton" class="clear-history" type="button">Clear history</button>
+            </div>
+
+            <div id="historyContainer" class="history-list"></div>
+          </div>
+        </section>
+
+        <!-- ABOUT -->
+        <section id="about" class="about-section">
+          <div>
+            <span class="section-kicker">ABOUT CLAIMCHECK</span>
+            <h2>Understand the evidence,<br /><span>not just the verdict.</span></h2>
+          </div>
+          <p>
+            ClaimCheck is an explainable claim-verification interface designed
+            to show how a claim can be classified, decomposed, compared with
+            evidence, and presented with a confidence level.
+          </p>
+        </section>
+
+      </main>
+    </div>
+
+    <footer class="footer">
+      <span>© 2026 ClaimCheck</span>
+      <span>Explainable AI • Evidence • Verification</span>
+    </footer>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
