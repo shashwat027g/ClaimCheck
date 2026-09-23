@@ -1,3 +1,5 @@
+// DOM elements
+
 const $ = (id) => document.getElementById(id);
 
 const claimInput = $("claimInput");
@@ -7,6 +9,9 @@ const loadingSection = $("loadingSection");
 const resultSection = $("resultSection");
 const historyContainer = $("historyContainer");
 const errorMessage = $("errorMessage");
+
+
+// Demo verification results
 
 const demoResults = [
   {
@@ -58,6 +63,9 @@ const demoResults = [
   }
 ];
 
+
+// Find matching demo result
+
 function findDemoResult(statement) {
   const text = statement.toLowerCase();
   return demoResults.find(item => item.match.every(word => text.includes(word))) || {
@@ -70,10 +78,17 @@ function findDemoResult(statement) {
   };
 }
 
+
+// Character counter
+
 function updateCounter() {
   characterCount.textContent = `${claimInput.value.length}/500`;
 }
+
 claimInput.addEventListener("input", updateCounter);
+
+
+// Example claim buttons
 
 document.querySelectorAll(".example-chip").forEach(btn => {
   btn.addEventListener("click", () => {
@@ -82,6 +97,9 @@ document.querySelectorAll(".example-chip").forEach(btn => {
     claimInput.focus();
   });
 });
+
+
+// Loading and scanning UI
 
 function createScanningUI() {
   loadingSection.hidden = false;
@@ -111,6 +129,9 @@ function createScanningUI() {
   `;
 }
 
+
+// Verification animation
+
 function runVerificationAnimation() {
   const stages = [
     ["Analyzing claim", "Understanding the statement and identifying its key meaning.", 20],
@@ -139,6 +160,7 @@ function runVerificationAnimation() {
       });
 
       i++;
+
       if (i >= stages.length) {
         clearInterval(timer);
         setTimeout(resolve, 250);
@@ -147,6 +169,9 @@ function runVerificationAnimation() {
   });
 }
 
+
+// Verdict styling
+
 function applyVerdictStyle(verdict) {
   const el = $("verdict");
   el.className = "verdict-badge";
@@ -154,6 +179,9 @@ function applyVerdictStyle(verdict) {
   el.classList.add(`verdict-${cls}`);
   el.textContent = verdict;
 }
+
+
+// Confidence animation
 
 function animateConfidence(target) {
   const valueEl = $("confidenceValue");
@@ -168,11 +196,15 @@ function animateConfidence(target) {
         clearInterval(timer);
         resolve();
       }
+
       valueEl.textContent = `${current}%`;
       progress.style.width = `${current}%`;
     }, 15);
   });
 }
+
+
+// Render decomposed claims
 
 function renderClaims(claims) {
   $("decomposedClaims").innerHTML = claims.map((claim, i) => `
@@ -182,6 +214,9 @@ function renderClaims(claims) {
     </div>
   `).join("");
 }
+
+
+// Render evidence
 
 function renderEvidence(evidence) {
   $("evidenceContainer").innerHTML = evidence.map((item, i) => `
@@ -194,6 +229,9 @@ function renderEvidence(evidence) {
     </div>
   `).join("");
 }
+
+
+// Render sources
 
 function renderSources() {
   $("sourcesContainer").innerHTML = `
@@ -216,6 +254,9 @@ function renderSources() {
   `;
 }
 
+
+// Show verification result
+
 async function showResult(statement) {
   const result = findDemoResult(statement);
   $("claimType").textContent = result.claimType;
@@ -236,6 +277,9 @@ async function showResult(statement) {
   resultSection.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+
+// History storage
+
 function getHistory() {
   try { return JSON.parse(localStorage.getItem("claimcheckHistory") || "[]"); }
   catch { return []; }
@@ -249,8 +293,12 @@ function saveHistory(statement, result) {
     confidence: result.confidence,
     timestamp: Date.now()
   });
+
   localStorage.setItem("claimcheckHistory", JSON.stringify(history.slice(0, 8)));
 }
+
+
+// Format history time
 
 function formatTime(timestamp) {
   const seconds = Math.floor((Date.now() - timestamp) / 1000);
@@ -262,12 +310,18 @@ function formatTime(timestamp) {
   return `${Math.floor(hours / 24)} day ago`;
 }
 
+
+// History status
+
 function historyStatus(verdict) {
   if (verdict === "SUPPORTED") return ["supported", "✓"];
   if (verdict === "CONTRADICTED") return ["contradicted", "×"];
   if (verdict === "MIXED") return ["mixed", "−"];
   return ["insufficient", "−"];
 }
+
+
+// Render history
 
 function renderHistory() {
   const history = getHistory();
@@ -280,11 +334,13 @@ function renderHistory() {
         <span>Analyze your first claim and it will appear here.</span>
       </div>
     `;
+
     return;
   }
 
   historyContainer.innerHTML = history.map((item, i) => {
     const [statusClass, icon] = historyStatus(item.verdict);
+
     return `
       <div class="history-row" style="animation-delay:${i * 70}ms">
         <div class="history-status ${statusClass}">${icon}</div>
@@ -304,16 +360,25 @@ function renderHistory() {
   }).join("");
 }
 
+
+// Clear history
+
 $("clearHistoryButton").addEventListener("click", () => {
   localStorage.removeItem("claimcheckHistory");
   renderHistory();
 });
+
+
+// New claim button
 
 $("newClaimButton").addEventListener("click", () => {
   resultSection.hidden = true;
   claimInput.focus();
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
+
+
+// Analyze claim
 
 analyzeButton.addEventListener("click", async () => {
   const statement = claimInput.value.trim();
@@ -349,26 +414,149 @@ analyzeButton.addEventListener("click", async () => {
   await showResult(statement);
 });
 
+
+// =========================================
+// Enter key behavior
+// =========================================
+
 claimInput.addEventListener("keydown", event => {
-  if (event.ctrlKey && event.key === "Enter") analyzeButton.click();
+
+  // Only handle the Enter key
+  if (event.key !== "Enter") {
+    return;
+  }
+
+  /*
+    DESKTOP / LAPTOP
+    ----------------
+    Enter       → Analyze Claim
+    Shift+Enter → New line
+
+    PHONE / TOUCH DEVICE
+    --------------------
+    Enter       → New line
+    Shift+Enter → New line
+  */
+
+  const isTouchDevice =
+    window.matchMedia("(pointer: coarse)").matches ||
+    navigator.maxTouchPoints > 0;
+
+  // On phones/tablets, allow normal Enter behavior.
+  if (isTouchDevice) {
+    return;
+  }
+
+  // On desktop, Shift+Enter creates a new line.
+  if (event.shiftKey) {
+    return;
+  }
+
+  // Desktop Enter → Analyze Claim
+  event.preventDefault();
+  analyzeButton.click();
 });
+
+
+// Navigation
+
+const mobileMenuButton = $("mobileMenuButton");
+const mobileSidebar = $("mobileSidebar");
+const mobileSidebarClose = $("mobileSidebarClose");
+const sidebarOverlay = $("sidebarOverlay");
+
+function openMobileSidebar(){
+  mobileSidebar.classList.add("is-open");
+  sidebarOverlay.classList.add("is-visible");
+
+  mobileMenuButton.setAttribute("aria-expanded", "true");
+  document.body.classList.add("menu-open");
+}
+
+function closeMobileSidebar(){
+  mobileSidebar.classList.remove("is-open");
+  sidebarOverlay.classList.remove("is-visible");
+
+  mobileMenuButton.setAttribute("aria-expanded", "false");
+  document.body.classList.remove("menu-open");
+}
+
+
+// Hamburger button
+
+mobileMenuButton.addEventListener("click", openMobileSidebar);
+
+
+// Close button
+
+mobileSidebarClose.addEventListener("click", closeMobileSidebar);
+
+
+// Overlay click
+
+sidebarOverlay.addEventListener("click", closeMobileSidebar);
+
+
+// Navigation links
 
 document.querySelectorAll(".side-link,.nav-link").forEach(link => {
+
   link.addEventListener("click", () => {
-    document.querySelectorAll(".side-link,.nav-link").forEach(x => x.classList.remove("active"));
-    document.querySelectorAll(`[href="${link.getAttribute("href")}"]`).forEach(x => x.classList.add("active"));
+
+    document.querySelectorAll(".side-link,.nav-link")
+      .forEach(x => x.classList.remove("active"));
+
+    const target = link.getAttribute("href");
+
+    document.querySelectorAll(`[href="${target}"]`)
+      .forEach(x => x.classList.add("active"));
+
+    // Close mobile sidebar after selecting a section
+    if(window.innerWidth <= 760){
+      closeMobileSidebar();
+    }
   });
+
 });
 
+
+// Theme
+
+const savedTheme = localStorage.getItem("claimcheckTheme");
+
+if(savedTheme === "dark"){
+  document.body.classList.add("soft-night");
+  $("themeButton").textContent = "☀";
+}else{
+  $("themeButton").textContent = "☾";
+}
+
+
 $("themeButton").addEventListener("click", () => {
+
   document.body.classList.toggle("soft-night");
+
+  const darkMode = document.body.classList.contains("soft-night");
+
+  localStorage.setItem(
+    "claimcheckTheme",
+    darkMode ? "dark" : "light"
+  );
+
+  $("themeButton").textContent = darkMode ? "☀" : "☾";
 });
+
+
+// HTML escaping
 
 function escapeHTML(value) {
   return String(value).replace(/[&<>"']/g, char => ({
     "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
   }[char]));
 }
+
+
+// Initialize application
 
 updateCounter();
 renderHistory();

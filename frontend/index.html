@@ -1,57 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Page settings -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ClaimCheck — AI Claim Verification</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
+
 <body>
   <div class="app-shell">
 
-    <!-- TOP BAR -->
+    <!-- Header and navigation -->
     <header class="topbar">
-      <a class="brand" href="#home" aria-label="ClaimCheck home">
-        <span class="brand-mark">✓</span>
-        <span class="brand-name">Claim<span>Check</span></span>
-      </a>
 
-      <div class="brand-tagline">
-        <strong>AI-Powered Claim Verification</strong>
-        <span>for a More Informed World</span>
-      </div>
+        <a class="brand" href="#home" aria-label="ClaimCheck home">
+            <span class="brand-mark">✓</span>
+            <span class="brand-name">Claim<span>Check</span></span>
+        </a>
 
-      <nav class="top-nav" aria-label="Main navigation">
-        <a class="nav-link active" href="#home"><span>⌂</span> Home</a>
-        <a class="nav-link" href="#history"><span>◷</span> History</a>
-        <a class="nav-link" href="#about"><span>ⓘ</span> About</a>
-      </nav>
+        <div class="brand-tagline">
+            <strong>AI-Powered Claim Verification</strong>
+            <span>for a More Informed World</span>
+        </div>
 
-      <button class="icon-button" id="themeButton" type="button" aria-label="Toggle appearance">☼</button>
-      <button class="profile-button" type="button" aria-label="Profile">●</button>
+        <!-- Desktop navigation -->
+        <nav class="top-nav" aria-label="Main navigation">
+            <a class="nav-link active" href="#home">
+                <span>⌂</span> Home
+            </a>
+
+            <a class="nav-link" href="#history">
+                <span>◷</span> History
+            </a>
+
+            <a class="nav-link" href="#about">
+                <span>ⓘ</span> About
+            </a>
+        </nav>
+
+        <!-- Theme -->
+        <button
+            class="icon-button"
+            id="themeButton"
+            type="button"
+            aria-label="Toggle dark mode"
+            title="Toggle dark mode"
+        >
+            ☼
+        </button>
+
+        <!-- Login -->
+        <a class="login-button" href="login.html">
+            Login
+        </a>
+
+        <!-- Mobile menu -->
+        <button
+            class="mobile-menu-button"
+            id="mobileMenuButton"
+            type="button"
+            aria-label="Open navigation"
+            aria-expanded="false"
+        >
+            ☰
+        </button>
+
     </header>
 
     <div class="workspace">
 
-      <!-- SIDEBAR -->
-      <aside class="sidebar">
-        <nav class="side-nav">
-          <a class="side-link active" href="#home"><span class="side-icon">⌂</span> Home</a>
-          <a class="side-link" href="#history"><span class="side-icon">◷</span> History</a>
-          <a class="side-link" href="#about"><span class="side-icon">ⓘ</span> About</a>
-        </nav>
+        <!-- Sidebar -->
+        <aside class="sidebar" id="mobileSidebar">
 
-        <div class="sidebar-tip">
-          <div class="tip-spark">✦</div>
-          <strong>Better evidence.<br />Clearer truth.</strong>
-          <div class="tip-line"></div>
-          <div class="tip-wave"></div>
-        </div>
-      </aside>
+            <div class="mobile-sidebar-header">
+                <strong>Menu</strong>
+
+                <button
+                    class="mobile-sidebar-close"
+                    id="mobileSidebarClose"
+                    type="button"
+                    aria-label="Close navigation"
+                >
+                    ×
+                </button>
+            </div>
+
+            <nav class="side-nav">
+
+                <a class="side-link active" href="#home">
+                    <span class="side-icon">⌂</span>
+                    <span>Home</span>
+                </a>
+
+                <a class="side-link" href="#history">
+                    <span class="side-icon">◷</span>
+                    <span>History</span>
+                </a>
+
+                <a class="side-link" href="#about">
+                    <span class="side-icon">ⓘ</span>
+                    <span>About</span>
+                </a>
+
+                <a class="side-link side-login-link" href="login.html">
+                    <span class="side-icon">↪</span>
+                    <span>Login</span>
+                </a>
+
+            </nav>
+
+            <div class="sidebar-tip">
+                <div class="tip-spark">✦</div>
+
+                <strong>
+                    Better evidence.<br>
+                    Clearer truth.
+                </strong>
+
+                <div class="tip-line"></div>
+                <div class="tip-wave"></div>
+            </div>
+
+        </aside>
+
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
       <main class="main-content">
 
-        <!-- HERO -->
+        <!-- Home / Hero section -->
         <section class="hero" id="home">
           <div class="hero-copy">
             <div class="eyebrow"><span>✦</span> AI CLAIM VERIFICATION</div>
@@ -61,7 +138,7 @@
               transparent, explainable results — so you can understand the evidence.
             </p>
 
-            <!-- CLAIM INPUT -->
+            <!-- Claim input -->
             <div class="claim-card" id="claimCard">
               <div class="claim-heading">
                 <div class="claim-heading-icon">✦</div>
@@ -85,6 +162,7 @@
                 <span id="characterCount">0/500</span>
               </div>
 
+              <!-- Example claims -->
               <div class="examples">
                 <span>Try these examples:</span>
                 <button class="example-chip" data-claim="The Earth is round.">The Earth is flat.</button>
@@ -96,7 +174,7 @@
             </div>
           </div>
 
-          <!-- AI VISUAL -->
+          <!-- AI visual -->
           <div class="hero-visual" aria-hidden="true">
             <div class="orb-glow"></div>
             <div class="orbit orbit-one"></div>
@@ -116,7 +194,7 @@
           </div>
         </section>
 
-        <!-- LOADING / VERIFICATION -->
+        <!-- Loading and verification -->
         <section id="loadingSection" class="loading-section" hidden>
           <div class="verification-loader">
             <div class="scanner-orb">
@@ -124,15 +202,18 @@
               <div class="scanner-ring ring-two"></div>
               <div class="scanner-core">✦</div>
             </div>
+
             <div class="scan-copy">
               <span class="scan-kicker">CLAIMCHECK AI</span>
               <h2 id="scanTitle">Analyzing claim</h2>
               <p id="scanDescription">Understanding the statement and preparing evidence checks.</p>
             </div>
+
             <div class="scan-progress">
               <div class="scan-progress-track"><span id="scanProgressBar"></span></div>
               <span id="scanProgressValue">0%</span>
             </div>
+
             <div class="scan-steps">
               <div class="scan-step active">01 <span>Analyze</span></div>
               <div class="scan-step">02 <span>Decompose</span></div>
@@ -142,7 +223,7 @@
           </div>
         </section>
 
-        <!-- RESULT -->
+        <!-- Verification result -->
         <section id="resultSection" class="result-section" hidden>
           <div class="section-heading">
             <div>
@@ -152,11 +233,13 @@
             <button class="secondary-button" id="newClaimButton" type="button">Verify another →</button>
           </div>
 
+          <!-- Result summary -->
           <div class="result-grid">
             <article class="result-card verdict-card">
               <span class="result-label">VERDICT</span>
               <div id="verdict" class="verdict-badge">INSUFFICIENT EVIDENCE</div>
               <p id="explanation">No result yet.</p>
+
               <div class="confidence">
                 <div class="confidence-top">
                   <span>Confidence</span>
@@ -173,7 +256,10 @@
             </article>
           </div>
 
+          <!-- Claim analysis details -->
           <div class="result-columns">
+
+            <!-- Decomposed claims -->
             <article class="content-card">
               <div class="content-card-heading">
                 <span class="mini-icon">01</span>
@@ -182,6 +268,7 @@
               <div id="decomposedClaims" class="decomposed-list"></div>
             </article>
 
+            <!-- Evidence -->
             <article class="content-card">
               <div class="content-card-heading">
                 <span class="mini-icon">02</span>
@@ -191,6 +278,7 @@
             </article>
           </div>
 
+          <!-- Sources -->
           <article class="content-card sources-card">
             <div class="content-card-heading">
               <span class="mini-icon">03</span>
@@ -200,7 +288,7 @@
           </article>
         </section>
 
-        <!-- HISTORY -->
+        <!-- History -->
         <section id="history" class="history-section">
           <div class="history-card">
             <div class="history-header">
@@ -211,6 +299,7 @@
                   <p>Your recent claim analysis history</p>
                 </div>
               </div>
+
               <button id="clearHistoryButton" class="clear-history" type="button">Clear history</button>
             </div>
 
@@ -218,12 +307,13 @@
           </div>
         </section>
 
-        <!-- ABOUT -->
+        <!-- About -->
         <section id="about" class="about-section">
           <div>
             <span class="section-kicker">ABOUT CLAIMCHECK</span>
             <h2>Understand the evidence,<br /><span>not just the verdict.</span></h2>
           </div>
+
           <p>
             ClaimCheck is an explainable claim-verification interface designed
             to show how a claim can be classified, decomposed, compared with
@@ -234,12 +324,14 @@
       </main>
     </div>
 
+    <!-- Footer -->
     <footer class="footer">
       <span>© 2026 ClaimCheck</span>
       <span>Explainable AI • Evidence • Verification</span>
     </footer>
   </div>
 
+  <!-- JavaScript -->
   <script src="js/app.js"></script>
 </body>
 </html>
