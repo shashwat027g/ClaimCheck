@@ -411,7 +411,12 @@ textarea::placeholder{color:#94a5c9}
 .history-row{
   display:grid;grid-template-columns:55px minmax(0,1fr) 115px 100px 75px;
   align-items:center;gap:15px;padding:11px 13px;border:1px solid #e4e9f5;border-radius:14px;
-  background:rgba(255,255,255,.8);transition:.25s;animation:historyReveal .45s ease both
+  background:rgba(255,255,255,.8);transition:.25s;cursor:pointer;animation:historyReveal .45s ease both
+}
+
+.history-row:focus-visible{
+  outline:2px solid var(--blue);
+  outline-offset:3px;
 }
 
 .history-row:hover{transform:translateX(3px);box-shadow:0 8px 20px rgba(72,93,151,.08);border-color:#ccd8f5}
@@ -1577,4 +1582,580 @@ body.soft-night .scanner-ring.ring-two{
 body.soft-night .scanner-core{
   box-shadow:
     0 0 40px rgba(102,93,238,.45) !important;
+}
+
+/* ACCOUNT / PROFILE MENU */
+
+.account-menu {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.profile-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 42px;
+    padding: 6px 12px 6px 7px;
+    border: 1px solid var(--border, #e3e7f2);
+    border-radius: 12px;
+    background: var(--surface, #ffffff);
+    color: var(--text, #20263a);
+    cursor: pointer;
+    font: inherit;
+    transition: 0.2s ease;
+}
+
+.profile-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(40, 50, 90, 0.08);
+}
+
+.profile-avatar,
+.profile-large-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4d9cff, #6357ee);
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.profile-avatar {
+    width: 30px;
+    height: 30px;
+    font-size: 13px;
+}
+
+.profile-user-name {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.profile-arrow {
+    font-size: 16px;
+    line-height: 1;
+}
+
+.profile-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 280px;
+    padding: 10px;
+    border: 1px solid var(--border, #e3e7f2);
+    border-radius: 16px;
+    background: var(--surface, #ffffff);
+    box-shadow: 0 18px 45px rgba(30, 40, 80, 0.15);
+    z-index: 1000;
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+}
+
+.profile-large-avatar {
+    width: 44px;
+    height: 44px;
+    font-size: 16px;
+}
+
+.profile-user-info {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.profile-user-info strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.profile-user-info span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #7b8194;
+    font-size: 12px;
+}
+
+.profile-divider {
+    height: 1px;
+    margin: 6px 4px;
+    background: var(--border, #e3e7f2);
+}
+
+.profile-menu-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 11px 10px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text, #20263a);
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+    font-size: 14px;
+    transition: background 0.2s ease;
+}
+
+.profile-menu-item:hover {
+    background: rgba(99, 87, 238, 0.08);
+}
+
+.profile-menu-item span:first-child {
+    width: 20px;
+    text-align: center;
+}
+
+.profile-logout {
+    color: #d94b67;
+}
+
+.profile-logout:hover {
+    background: rgba(217, 75, 103, 0.08);
+}
+
+/* Dark mode */
+
+body.soft-night .profile-button,
+body.soft-night .profile-dropdown {
+    background: #151a2b;
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f1f3fa;
+}
+
+body.soft-night .profile-user-info span {
+    color: #9ca4ba;
+}
+
+body.soft-night .profile-divider {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+body.soft-night .profile-menu-item {
+    color: #f1f3fa;
+}
+
+body.soft-night .profile-menu-item:hover {
+    background: rgba(255, 255, 255, 0.07);
+}
+
+/* Mobile */
+
+@media (max-width: 700px) {
+
+    .profile-user-name {
+        display: none;
+    }
+
+    .profile-button {
+        padding-right: 8px;
+    }
+
+    .profile-dropdown {
+        right: -5px;
+        width: 270px;
+    }
+
+}
+
+/* ACCOUNT PROFILE POPUP */
+
+.account-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.account-modal[hidden] {
+    display: none;
+}
+
+.account-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(7, 12, 28, 0.58);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.account-modal-card {
+    position: relative;
+    z-index: 1;
+    width: min(620px, 100%);
+    max-height: calc(100vh - 48px);
+    overflow: auto;
+
+    background: rgba(255, 255, 255, 0.97);
+    border: 1px solid rgba(99, 87, 238, 0.18);
+    border-radius: 24px;
+
+    box-shadow:
+        0 30px 80px rgba(22, 30, 65, 0.28),
+        0 0 50px rgba(99, 87, 238, 0.12);
+
+    animation: accountModalPop 0.22s ease-out;
+}
+
+@keyframes accountModalPop {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Header */
+
+.account-modal-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 24px 10px;
+}
+
+.account-modal-label {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    color: #6357ee;
+}
+
+.account-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4d9cff;
+    box-shadow: 0 0 10px rgba(77, 156, 255, 0.6);
+}
+
+.account-close-button {
+    width: 36px;
+    height: 36px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+    border-radius: 10px;
+
+    background: #f1f3f8;
+    color: #26304a;
+
+    font-size: 24px;
+    line-height: 1;
+
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.account-close-button:hover {
+    background: #e5e8f0;
+    transform: rotate(4deg);
+}
+
+/* Profile */
+
+.account-profile-hero {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 18px 24px 26px;
+}
+
+.account-details-avatar {
+    width: 76px;
+    height: 76px;
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 22px;
+
+    background: linear-gradient(
+        135deg,
+        #4d9cff,
+        #6357ee,
+        #9a5cf6
+    );
+
+    color: white;
+    font-size: 30px;
+    font-weight: 800;
+
+    box-shadow:
+        0 12px 30px rgba(99, 87, 238, 0.28);
+}
+
+.account-profile-main h2 {
+    margin: 0 0 5px;
+    font-size: 25px;
+    color: #172033;
+}
+
+.account-profile-main p {
+    margin: 0 0 10px;
+    font-size: 14px;
+    color: #667085;
+}
+
+.account-member-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    padding: 5px 10px;
+    border-radius: 999px;
+
+    background: rgba(77, 156, 255, 0.09);
+    color: #4d78c7;
+
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.account-member-badge span {
+    font-size: 9px;
+}
+
+/* Information */
+
+.account-info-section {
+    padding: 0 24px 24px;
+}
+
+.account-section-heading {
+    margin-bottom: 12px;
+
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    color: #8992a6;
+}
+
+.account-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.account-info-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    min-height: 72px;
+    padding: 14px;
+
+    border: 1px solid #e7eaf1;
+    border-radius: 15px;
+
+    background: #f8f9fc;
+}
+
+.account-info-icon {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 10px;
+
+    background: rgba(99, 87, 238, 0.09);
+    color: #6357ee;
+
+    font-size: 16px;
+}
+
+.account-info-box small {
+    display: block;
+    margin-bottom: 4px;
+
+    color: #8992a6;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.account-info-box strong {
+    display: block;
+
+    color: #26304a;
+    font-size: 13px;
+
+    word-break: break-word;
+}
+
+/* Footer */
+
+.account-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 16px 24px;
+
+    border-top: 1px solid #e7eaf1;
+
+    color: #8992a6;
+    font-size: 11px;
+}
+
+.account-done-button {
+    padding: 9px 18px;
+
+    border: none;
+    border-radius: 10px;
+
+    background: linear-gradient(
+        135deg,
+        #4d9cff,
+        #6357ee
+    );
+
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    box-shadow: 0 6px 16px rgba(99, 87, 238, 0.2);
+}
+
+.account-done-button:hover {
+    transform: translateY(-1px);
+}
+
+/* ACCOUNT POPUP — DARK MODE */
+
+body.soft-night .account-modal-backdrop {
+    background: rgba(2, 6, 20, 0.72);
+}
+
+body.soft-night .account-modal-card {
+    background: rgba(17, 24, 45, 0.98);
+
+    border-color: rgba(99, 156, 255, 0.18);
+
+    box-shadow:
+        0 30px 90px rgba(0, 0, 0, 0.55),
+        0 0 60px rgba(99, 87, 238, 0.14);
+}
+
+body.soft-night .account-close-button {
+    background: rgba(255, 255, 255, 0.07);
+    color: #dce4ff;
+}
+
+body.soft-night .account-close-button:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+body.soft-night .account-profile-main h2 {
+    color: #f5f7ff;
+}
+
+body.soft-night .account-profile-main p {
+    color: #9da9c7;
+}
+
+body.soft-night .account-member-badge {
+    background: rgba(77, 156, 255, 0.12);
+    color: #8ebcff;
+}
+
+body.soft-night .account-info-box {
+    background: rgba(255, 255, 255, 0.035);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+body.soft-night .account-info-box strong {
+    color: #edf2ff;
+}
+
+body.soft-night .account-info-box small {
+    color: #8996b5;
+}
+
+body.soft-night .account-section-heading {
+    color: #7886a8;
+}
+
+body.soft-night .account-modal-footer {
+    border-top-color: rgba(255, 255, 255, 0.08);
+    color: #7886a8;
+}
+
+/* ACCOUNT POPUP — MOBILE */
+
+@media (max-width: 600px) {
+
+    .account-modal {
+        padding: 14px;
+    }
+
+    .account-modal-card {
+        width: 100%;
+        border-radius: 20px;
+    }
+
+    .account-profile-hero {
+        padding: 16px 18px 22px;
+    }
+
+    .account-details-avatar {
+        width: 62px;
+        height: 62px;
+        border-radius: 18px;
+        font-size: 24px;
+    }
+
+    .account-profile-main h2 {
+        font-size: 21px;
+    }
+
+    .account-info-section {
+        padding: 0 18px 20px;
+    }
+
+    .account-info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .account-modal-footer {
+        padding: 14px 18px;
+    }
 }

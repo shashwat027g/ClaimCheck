@@ -9,4 +9,6 @@ public interface VerificationHistoryRepository
         extends JpaRepository<VerificationHistory, Long> {
 
     List<VerificationHistory> findByClaimIdOrderByVerifiedAtDesc(Long claimId);
+
+    void deleteByClaimId(Long claimId);
 }

@@ -10,74 +10,191 @@ const resultSection = $("resultSection");
 const historyContainer = $("historyContainer");
 const errorMessage = $("errorMessage");
 
+// ACCOUNT / PROFILE 
 
-// Demo verification results
+const accountMenu = document.getElementById("accountMenu");
+const loginButton = document.getElementById("loginButton");
+const profileButton = document.getElementById("profileButton");
+const profileDropdown = document.getElementById("profileDropdown");
 
-const demoResults = [
-  {
-    match: ["earth", "round"],
-    verdict: "SUPPORTED",
-    confidence: 94,
-    claimType: "FACTUAL",
-    explanation: "The claim is consistent with established scientific evidence and the accepted shape of Earth.",
-    decomposedClaims: ["Earth has an approximately spherical shape.", "Earth is not a flat plane."],
-    evidence: [
-      ["Scientific observation", "Measurements, satellite imagery, and observations consistently support a spherical Earth."],
-      ["Astronomical evidence", "Earth's curved shadow and observations from space provide supporting evidence."]
-    ]
-  },
-  {
-    match: ["sun", "revolves", "earth"],
-    verdict: "CONTRADICTED",
-    confidence: 96,
-    claimType: "FACTUAL",
-    explanation: "The statement conflicts with the modern heliocentric model of the Solar System.",
-    decomposedClaims: ["The Sun is at the center of the Solar System.", "Earth orbits the Sun."],
-    evidence: [
-      ["Astronomy", "Planetary observations and orbital measurements support Earth's orbit around the Sun."],
-      ["Scientific model", "The heliocentric model accurately describes the observed motions of planets."]
-    ]
-  },
-  {
-    match: ["coffee", "smarter"],
-    verdict: "INSUFFICIENT EVIDENCE",
-    confidence: 63,
-    claimType: "GENERAL",
-    explanation: "The statement is broad and does not provide enough detail to establish a universal conclusion.",
-    decomposedClaims: ["Coffee consumption may affect alertness.", "That does not establish that coffee makes everyone smarter."],
-    evidence: [
-      ["Research context", "Effects of caffeine can vary between individuals and depend on dose and context."]
-    ]
-  },
-  {
-    match: ["climate", "humans"],
-    verdict: "MIXED",
-    confidence: 78,
-    claimType: "SCIENTIFIC",
-    explanation: "Human activity is a major driver of recent climate change, while climate systems also contain natural influences.",
-    decomposedClaims: ["Human activities affect climate.", "Natural factors also influence climate variability."],
-    evidence: [
-      ["Climate science", "Multiple lines of evidence connect greenhouse-gas emissions with recent warming."],
-      ["Natural variability", "Natural processes can influence climate on different timescales."]
-    ]
-  }
-];
+const profileAvatar = document.getElementById("profileAvatar");
+const profileUserName = document.getElementById("profileUserName");
+
+const profileLargeAvatar =
+    document.getElementById("profileLargeAvatar");
+
+const profileDropdownName =
+    document.getElementById("profileDropdownName");
+
+const profileDropdownEmail =
+    document.getElementById("profileDropdownEmail");
+
+const logoutButton =
+    document.getElementById("logoutButton");
+
+const profileHistoryButton =
+    document.getElementById("profileHistoryButton");
+
+const accountButton = document.getElementById("accountButton");
+const accountDetailsPanel = document.getElementById("accountDetailsPanel");
+const accountCloseButton = document.getElementById("accountCloseButton");
+
+const accountDetailsAvatar = document.getElementById("accountDetailsAvatar");
+const accountDetailsName = document.getElementById("accountDetailsName");
+const accountDetailsEmail = document.getElementById("accountDetailsEmail");
+const accountDetailsUserId = document.getElementById("accountDetailsUserId");
 
 
-// Find matching demo result
+// Show logged-in user
 
-function findDemoResult(statement) {
-  const text = statement.toLowerCase();
-  return demoResults.find(item => item.match.every(word => text.includes(word))) || {
-    verdict: "INSUFFICIENT EVIDENCE",
-    confidence: 61,
-    claimType: "GENERAL",
-    explanation: "This standalone demo does not have a matching evidence scenario for the submitted statement.",
-    decomposedClaims: [statement, "Additional evidence would be needed for a stronger conclusion."],
-    evidence: [["Demo evidence", "Use one of the example claims to see the full verification presentation."]]
-  };
+function updateAccountUI() {
+
+    const isLoggedIn =
+        localStorage.getItem("claimcheckLoggedIn") === "true";
+
+    const userName =
+        localStorage.getItem("claimcheckUserName") || "User";
+
+    const userEmail =
+        localStorage.getItem("claimcheckUser") || "";
+
+    if (!isLoggedIn) {
+
+        loginButton.hidden = false;
+        profileButton.hidden = true;
+        profileDropdown.hidden = true;
+
+        return;
+    }
+
+    loginButton.hidden = true;
+    profileButton.hidden = false;
+
+    profileUserName.textContent = userName;
+    profileDropdownName.textContent = userName;
+    profileDropdownEmail.textContent = userEmail;
+
+    const firstLetter =
+        userName.trim().charAt(0).toUpperCase() || "U";
+
+    profileAvatar.textContent = firstLetter;
+    profileLargeAvatar.textContent = firstLetter;
 }
 
+
+// Open / close profile dropdown
+
+profileButton.addEventListener("click", () => {
+
+    const isOpen =
+        !profileDropdown.hidden;
+
+    profileDropdown.hidden = isOpen;
+
+    profileButton.setAttribute(
+        "aria-expanded",
+        String(!isOpen)
+    );
+
+});
+
+
+// Close dropdown when clicking outside 
+
+document.addEventListener("click", event => {
+
+    if (
+        accountMenu &&
+        !accountMenu.contains(event.target)
+    ) {
+
+        profileDropdown.hidden = true;
+
+        profileButton.setAttribute(
+            "aria-expanded",
+            "false"
+        );
+
+    }
+
+});
+
+
+// Logout 
+
+logoutButton.addEventListener("click", () => {
+
+    localStorage.removeItem(
+        "claimcheckLoggedIn"
+    );
+
+    localStorage.removeItem(
+        "claimcheckUser"
+    );
+
+    localStorage.removeItem(
+        "claimcheckUserName"
+    );
+
+    localStorage.removeItem(
+        "claimcheckUserId"
+    );
+
+    window.location.href = "login.html";
+
+});
+
+
+// Open verification history 
+
+profileHistoryButton.addEventListener(
+    "click",
+    () => {
+
+        profileDropdown.hidden = true;
+
+        document
+            .getElementById("history")
+            .scrollIntoView({
+                behavior: "smooth"
+            });
+
+    }
+);
+
+accountButton.addEventListener("click", () => {
+  const userName = localStorage.getItem("claimcheckUserName") || "User";
+  const userEmail = localStorage.getItem("claimcheckUser") || "Not available";
+  const userId = localStorage.getItem("claimcheckUserId") || "Not available";
+
+  const firstLetter = userName.trim().charAt(0).toUpperCase() || "U";
+
+  accountDetailsAvatar.textContent = firstLetter;
+  accountDetailsName.textContent = userName;
+  accountDetailsEmail.textContent = userEmail;
+  accountDetailsEmailCard.textContent = userEmail;
+  accountDetailsUserId.textContent = userId;
+
+  profileDropdown.hidden = true;
+  accountDetailsPanel.hidden = false;
+
+  document.body.classList.add("account-modal-open");
+});
+
+accountCloseButton.addEventListener("click", () => {
+  accountDetailsPanel.hidden = true;
+  document.body.classList.remove("account-modal-open");
+});
+
+accountDoneButton.addEventListener("click", () => {
+  accountDetailsPanel.hidden = true;
+  document.body.classList.remove("account-modal-open");
+});
+
+
+// Initialize account UI 
+
+updateAccountUI();
 
 // Character counter
 
@@ -210,7 +327,7 @@ function renderClaims(claims) {
   $("decomposedClaims").innerHTML = claims.map((claim, i) => `
     <div class="decomposed-claim" style="animation-delay:${i * 70}ms">
       <span class="claim-number">${String(i + 1).padStart(2, "0")}</span>
-      <span>${escapeHTML(claim)}</span>
+      <span>${escapeHTML(claim.statement)}</span>
     </div>
   `).join("");
 }
@@ -219,12 +336,31 @@ function renderClaims(claims) {
 // Render evidence
 
 function renderEvidence(evidence) {
+  if (!evidence || !evidence.length) {
+    $("evidenceContainer").innerHTML = `
+      <div class="evidence-card">
+        <div class="evidence-icon">◈</div>
+        <div>
+          <strong>No evidence found</strong>
+          <p>No external or stored evidence was available for this claim.</p>
+        </div>
+      </div>
+    `;
+
+    return;
+  }
+
   $("evidenceContainer").innerHTML = evidence.map((item, i) => `
     <div class="evidence-card" style="animation-delay:${i * 80}ms">
       <div class="evidence-icon">◈</div>
       <div>
-        <strong>${escapeHTML(item[0])}</strong>
-        <p>${escapeHTML(item[1])}</p>
+        <strong>${escapeHTML(item.title || item.sourceName || "Evidence")}</strong>
+        <p>${escapeHTML(item.content || "")}</p>
+        ${
+          item.url
+            ? `<a href="${escapeHTML(item.url)}" target="_blank" rel="noopener noreferrer">View source</a>`
+            : ""
+        }
       </div>
     </div>
   `).join("");
@@ -233,68 +369,178 @@ function renderEvidence(evidence) {
 
 // Render sources
 
-function renderSources() {
-  $("sourcesContainer").innerHTML = `
-    <div class="source-card">
-      <div class="source-icon">◎</div>
-      <div class="source-top">
-        <strong>ClaimCheck demo evidence set</strong>
-        <p>Local demonstration data used for the standalone frontend.</p>
+function renderSources(sources) {
+  if (!sources || !sources.length) {
+    $("sourcesContainer").innerHTML = `
+      <div class="source-card">
+        <div class="source-icon">◎</div>
+        <div class="source-top">
+          <strong>No source information available</strong>
+          <p>No source credibility information was returned.</p>
+        </div>
+        <span class="source-status">N/A</span>
       </div>
-      <span class="source-status">REFERENCE</span>
-    </div>
+    `;
+
+    return;
+  }
+
+  const uniqueSources = Array.from(
+    new Map(
+      sources.map(source => [
+        `${source.sourceName}-${source.sourceType}`,
+        source
+      ])
+    ).values()
+  );
+
+  $("sourcesContainer").innerHTML = uniqueSources.map(source => `
     <div class="source-card">
       <div class="source-icon">✦</div>
+
       <div class="source-top">
-        <strong>Explainable verification layer</strong>
-        <p>Shows evidence context, classification, and confidence without backend connection.</p>
+        <strong>${escapeHTML(source.sourceName || "Unknown source")}</strong>
+        <p>
+          ${escapeHTML(source.sourceType || "OTHER")}
+          · Credibility score:
+          ${Math.round(source.credibilityScore * 100)}%
+        </p>
       </div>
-      <span class="source-status">DEMO</span>
+
+      <span class="source-status">REFERENCE</span>
     </div>
-  `;
+  `).join("");
 }
 
 
 // Show verification result
 
-async function showResult(statement) {
-  const result = findDemoResult(statement);
-  $("claimType").textContent = result.claimType;
-  $("claimId").textContent = `CC-${Date.now().toString().slice(-6)}`;
-  $("explanation").textContent = result.explanation;
+async function showResult(result) {
 
-  applyVerdictStyle(result.verdict);
-  renderClaims(result.decomposedClaims);
-  renderEvidence(result.evidence);
-  renderSources();
+  $("claimType").textContent = result.claimType || "GENERAL_FACTUAL";
+
+  $("claimId").textContent =
+    result.claimId
+      ? `CC-${result.claimId}`
+      : "CC-UNKNOWN";
+
+  $("explanation").textContent =
+    result.explanation || "No explanation available.";
+
+  applyVerdictStyle(result.verdict || "INSUFFICIENT_EVIDENCE");
+
+  renderClaims(result.decomposedClaims || []);
+
+  renderEvidence(result.evidence || []);
+
+  renderSources(result.sources || []);
 
   resultSection.hidden = false;
-  await animateConfidence(result.confidence);
 
-  saveHistory(statement, result);
-  renderHistory();
+  const confidencePercent =
+    Math.round((result.confidence || 0) * 100);
 
-  resultSection.scrollIntoView({ behavior: "smooth", block: "start" });
+  await animateConfidence(confidencePercent);
+
+  resultSection.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
 }
 
 
 // History storage
 
-function getHistory() {
-  try { return JSON.parse(localStorage.getItem("claimcheckHistory") || "[]"); }
-  catch { return []; }
-}
+let backendHistory = [];
 
-function saveHistory(statement, result) {
-  const history = getHistory();
-  history.unshift({
-    statement,
-    verdict: result.verdict,
-    confidence: result.confidence,
-    timestamp: Date.now()
-  });
+async function loadHistory() {
 
-  localStorage.setItem("claimcheckHistory", JSON.stringify(history.slice(0, 8)));
+  try {
+
+    const response = await fetch(
+      "http://localhost:8080/api/claims/history"
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to load claim history.");
+    }
+
+    const claims = await response.json();
+
+    /*
+     * Get the latest verification result
+     * for every claim.
+     */
+    backendHistory = await Promise.all(
+      claims.map(async (claim) => {
+
+        try {
+
+          const historyResponse = await fetch(
+            `http://localhost:8080/api/claims/${claim.claimId}/history`
+          );
+
+          if (!historyResponse.ok) {
+            return {
+              ...claim,
+              verdict: "INSUFFICIENT_EVIDENCE",
+              confidence: 0
+            };
+          }
+
+          const verificationHistory =
+            await historyResponse.json();
+
+          const latest =
+            verificationHistory[0];
+
+          if (!latest) {
+            return {
+              ...claim,
+              verdict: "INSUFFICIENT_EVIDENCE",
+              confidence: 0
+            };
+          }
+
+          return {
+            ...claim,
+            verdict: latest.verdict,
+            confidence: Math.round(
+              latest.confidence * 100
+            ),
+            timestamp: latest.verifiedAt
+          };
+
+        } catch (error) {
+
+          console.error(
+            `Failed to load history for claim ${claim.claimId}:`,
+            error
+          );
+
+          return {
+            ...claim,
+            verdict: "INSUFFICIENT_EVIDENCE",
+            confidence: 0
+          };
+        }
+
+      })
+    );
+
+    renderHistory();
+
+  } catch (error) {
+
+    console.error(
+      "History loading failed:",
+      error
+    );
+
+    backendHistory = [];
+
+    renderHistory();
+  }
 }
 
 
@@ -324,9 +570,11 @@ function historyStatus(verdict) {
 // Render history
 
 function renderHistory() {
-  const history = getHistory();
+
+  const history = backendHistory;
 
   if (!history.length) {
+
     historyContainer.innerHTML = `
       <div class="history-empty">
         <div class="empty-icon">◷</div>
@@ -339,27 +587,113 @@ function renderHistory() {
   }
 
   historyContainer.innerHTML = history.map((item, i) => {
-    const [statusClass, icon] = historyStatus(item.verdict);
+
+    const [statusClass, icon] =
+      historyStatus(item.verdict);
 
     return `
-      <div class="history-row" style="animation-delay:${i * 70}ms">
-        <div class="history-status ${statusClass}">${icon}</div>
+      <div
+        class="history-row"
+        style="animation-delay:${i * 70}ms"
+        onclick="openHistoryClaim(${item.claimId})"
+        role="button"
+        tabindex="0"
+      >
+
+        <div class="history-status ${statusClass}">
+          ${icon}
+        </div>
+
         <div class="history-main">
-          <div class="history-verdict">${escapeHTML(item.verdict)}</div>
-          <div class="history-claim" title="${escapeHTML(item.statement)}">${escapeHTML(item.statement)}</div>
-          <div class="history-time">${formatTime(item.timestamp)}</div>
+
+          <div class="history-verdict">
+            ${escapeHTML(item.verdict)}
+          </div>
+
+          <div
+            class="history-claim"
+            title="${escapeHTML(item.statement)}"
+          >
+            ${escapeHTML(item.statement)}
+          </div>
+
+          <div class="history-time">
+            ${item.timestamp
+              ? formatTime(new Date(item.timestamp).getTime())
+              : "Saved in ClaimCheck"
+            }
+          </div>
+
         </div>
+
         <div class="history-confidence">
-          <strong>${item.confidence}%</strong>
+
+          <strong>
+            ${item.confidence}%
+          </strong>
+
           <span>Confidence</span>
-          <div class="mini-progress"><span style="width:${item.confidence}%"></span></div>
+
+          <div class="mini-progress">
+            <span
+              style="width:${item.confidence}%"
+            ></span>
+          </div>
+
         </div>
+
         <div class="history-arrow">›</div>
+
       </div>
     `;
+
   }).join("");
 }
 
+async function openHistoryClaim(claimId) {
+
+  try {
+
+    resultSection.hidden = true;
+
+    loadingSection.hidden = false;
+
+    const response = await fetch(
+      `http://localhost:8080/api/claims/${claimId}/analyze`
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        `Unable to load claim (${response.status}).`
+      );
+    }
+
+    const result = await response.json();
+
+    loadingSection.hidden = true;
+
+    await showResult(result);
+
+    resultSection.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+
+  } catch (error) {
+
+    console.error(
+      "Failed to open history claim:",
+      error
+    );
+
+    loadingSection.hidden = true;
+
+    errorMessage.textContent =
+      error.message ||
+      "Unable to load this verification.";
+
+  }
+}
 
 // Clear history
 
@@ -381,37 +715,123 @@ $("newClaimButton").addEventListener("click", () => {
 // Analyze claim
 
 analyzeButton.addEventListener("click", async () => {
+
   const statement = claimInput.value.trim();
 
   if (!statement) {
-    errorMessage.textContent = "Please enter a claim before analyzing.";
+    errorMessage.textContent =
+      "Please enter a claim before analyzing.";
+
     claimInput.focus();
     return;
   }
 
   if (statement.length < 8) {
-    errorMessage.textContent = "Please enter a little more detail for the claim.";
+    errorMessage.textContent =
+      "Please enter a little more detail for the claim.";
+
     claimInput.focus();
     return;
   }
 
   errorMessage.textContent = "";
+
   resultSection.hidden = true;
+
   analyzeButton.classList.add("is-analyzing");
   analyzeButton.disabled = true;
-  analyzeButton.querySelector("span:nth-child(2)").textContent = "Analyzing...";
+
+  analyzeButton.querySelector("span:nth-child(2)")
+    .textContent = "Analyzing...";
 
   createScanningUI();
-  loadingSection.scrollIntoView({ behavior: "smooth", block: "center" });
 
-  await runVerificationAnimation();
+  loadingSection.scrollIntoView({
+    behavior: "smooth",
+    block: "center"
+  });
 
-  loadingSection.hidden = true;
-  analyzeButton.classList.remove("is-analyzing");
-  analyzeButton.disabled = false;
-  analyzeButton.querySelector("span:nth-child(2)").textContent = "Analyze Claim";
+  try {
 
-  await showResult(statement);
+    /*
+     * Run the existing ClaimCheck scanning animation
+     * while the backend processes the claim.
+     */
+    const animationPromise =
+      runVerificationAnimation();
+
+    /*
+     * Send the real claim to Spring Boot.
+     */
+    const response = await fetch(
+      "http://localhost:8080/api/claims/analyze",
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+          statement: statement
+        })
+      }
+    );
+
+    if (!response.ok) {
+
+      let message =
+        `Backend request failed (${response.status}).`;
+
+      try {
+        const errorData = await response.json();
+
+        if (errorData.message) {
+          message = errorData.message;
+        }
+
+      } catch {
+        // Keep the default error message.
+      }
+
+      throw new Error(message);
+    }
+
+    const result = await response.json();
+
+    /*
+     * Make sure the scanning animation finishes
+     * before displaying the result.
+     */
+    await animationPromise;
+
+    loadingSection.hidden = true;
+
+    analyzeButton.classList.remove("is-analyzing");
+    analyzeButton.disabled = false;
+
+    analyzeButton.querySelector("span:nth-child(2)")
+      .textContent = "Analyze Claim";
+
+    await showResult(result);
+
+  } catch (error) {
+
+    console.error("Claim analysis failed:", error);
+
+    loadingSection.hidden = true;
+
+    analyzeButton.classList.remove("is-analyzing");
+    analyzeButton.disabled = false;
+
+    analyzeButton.querySelector("span:nth-child(2)")
+      .textContent = "Analyze Claim";
+
+    errorMessage.textContent =
+      error.message ||
+      "Unable to analyze the claim. Please make sure the backend is running.";
+
+  }
 });
 
 
@@ -559,4 +979,4 @@ function escapeHTML(value) {
 // Initialize application
 
 updateCounter();
-renderHistory();
+loadHistory();

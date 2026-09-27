@@ -11,6 +11,8 @@ public class ClaimAnalysisResponse {
     private String verdict;
     private double confidence;
     private String explanation;
+    private List<EvidenceResponse> evidence;
+    private List<SourceCredibilityResponse> sources;
 
     public ClaimAnalysisResponse(
             Long claimId,
@@ -19,7 +21,9 @@ public class ClaimAnalysisResponse {
             List<DecomposedClaim> decomposedClaims,
             String verdict,
             double confidence,
-            String explanation) {
+            String explanation,
+            List<EvidenceResponse> evidence,
+            List<SourceCredibilityResponse> sources) {
 
         this.claimId = claimId;
         this.statement = statement;
@@ -28,6 +32,8 @@ public class ClaimAnalysisResponse {
         this.verdict = verdict;
         this.confidence = confidence;
         this.explanation = explanation;
+        this.evidence = evidence;
+        this.sources = sources;
     }
 
     public Long getClaimId() {
@@ -56,5 +62,13 @@ public class ClaimAnalysisResponse {
 
     public String getExplanation() {
         return explanation;
+    }
+
+    public List<EvidenceResponse> getEvidence() {
+        return evidence;
+    }
+
+    public List<SourceCredibilityResponse> getSources() {
+        return sources;
     }
 }

@@ -8,4 +8,6 @@ import java.util.List;
 public interface EvidenceRepository extends JpaRepository<Evidence, Long> {
 
     List<Evidence> findByClaimId(Long claimId);
+
+    void deleteByClaimId(Long claimId);
 }

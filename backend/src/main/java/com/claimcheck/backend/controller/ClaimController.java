@@ -1,18 +1,26 @@
 package com.claimcheck.backend.controller;
 
+import com.claimcheck.backend.dto.ClaimHistoryResponse;
 import com.claimcheck.backend.dto.ClaimAnalysisResponse;
 import com.claimcheck.backend.dto.ClaimRequest;
+import com.claimcheck.backend.dto.VerificationHistoryResponse;
+import com.claimcheck.backend.entity.Claim;
 import com.claimcheck.backend.service.ClaimService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.claimcheck.backend.dto.VerificationHistoryResponse;
-
-import com.claimcheck.backend.entity.Claim;
 import java.util.List;
 
 @RestController
+@CrossOrigin(
+        origins = {
+                "http://127.0.0.1:5500",
+                "http://localhost:5500",
+                "http://127.0.0.1:3000",
+                "http://localhost:3000"
+        }
+)
 @RequestMapping("/api/claims")
 public class ClaimController {
 
@@ -42,9 +50,10 @@ public class ClaimController {
     }
 
     @GetMapping("/history")
-    public ResponseEntity<List<Claim>> getClaimHistory() {
+    public ResponseEntity<List<ClaimHistoryResponse>> getClaimHistory() {
 
-        List<Claim> claims = claimService.getClaimHistory();
+        List<ClaimHistoryResponse> claims =
+            claimService.getClaimHistory();
 
         return ResponseEntity.ok(claims);
     }
@@ -57,5 +66,14 @@ public class ClaimController {
                 claimService.getVerificationHistory(claimId);
 
         return ResponseEntity.ok(history);
+    }
+
+    @DeleteMapping("/{claimId}")
+    public ResponseEntity<Void> deleteClaim(
+            @PathVariable Long claimId) {
+
+        claimService.deleteClaim(claimId);
+
+        return ResponseEntity.noContent().build();
     }
 }

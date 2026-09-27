@@ -30,16 +30,16 @@ togglePassword.addEventListener("click", () => {
 });
 
 
-// Demo login
+// Backend login
 
-loginForm.addEventListener("submit", event => {
+loginForm.addEventListener("submit", async event => {
 
   event.preventDefault();
 
   const email = emailInput.value.trim();
   const password = passwordInput.value.trim();
 
-  if(!email || !password){
+  if (!email || !password) {
 
     loginMessage.textContent =
       "Please enter your email and password.";
@@ -49,32 +49,101 @@ loginForm.addEventListener("submit", event => {
     return;
   }
 
-
-  // Standalone frontend demo login
-
-  localStorage.setItem(
-    "claimcheckLoggedIn",
-    "true"
-  );
-
-  localStorage.setItem(
-    "claimcheckUser",
-    email
-  );
-
-
   loginMessage.textContent =
-    "Login successful. Opening ClaimCheck...";
+    "Signing in...";
 
   loginMessage.style.color =
-    "#4c9a70";
+    "#665be8";
 
+  const loginButton =
+    loginForm.querySelector(".login-submit");
 
-  setTimeout(() => {
+  loginButton.disabled = true;
 
-    window.location.href = "index.html";
+  try {
 
-  }, 700);
+    const response = await fetch(
+      "http://localhost:8080/api/auth/login",
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+          email: email,
+          password: password
+        })
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+
+      throw new Error(
+        result.message ||
+        "Invalid email or password."
+      );
+    }
+
+    /*
+     * Save basic login information
+     * for the current frontend session.
+     */
+    localStorage.setItem(
+      "claimcheckLoggedIn",
+      "true"
+    );
+
+    localStorage.setItem(
+      "claimcheckUser",
+      result.email
+    );
+
+    localStorage.setItem(
+      "claimcheckUserName",
+      result.name
+    );
+
+    localStorage.setItem(
+      "claimcheckUserId",
+      result.userId
+    );
+
+    loginMessage.textContent =
+      "Login successful. Opening ClaimCheck...";
+
+    loginMessage.style.color =
+      "#4c9a70";
+
+    setTimeout(() => {
+
+      window.location.href =
+        "index.html";
+
+    }, 700);
+
+  } catch (error) {
+
+    console.error(
+      "Login failed:",
+      error
+    );
+
+    loginMessage.textContent =
+      error.message ||
+      "Unable to login. Please try again.";
+
+    loginMessage.style.color =
+      "#d94b67";
+
+  } finally {
+
+    loginButton.disabled = false;
+
+  }
 
 });
 

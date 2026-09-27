@@ -21,6 +21,8 @@ public class SourceCredibilityService {
 
             case "ESTABLISHED_NEWS" -> 0.80;
 
+            case "ENCYCLOPEDIA" -> 0.75;
+
             case "ORGANIZATION" -> 0.75;
 
             case "BLOG" -> 0.45;

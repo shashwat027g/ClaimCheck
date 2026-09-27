@@ -1,5 +1,8 @@
 package com.claimcheck.backend.service;
 
+import com.claimcheck.backend.dto.ClaimHistoryResponse;
+import com.claimcheck.backend.dto.SourceCredibilityResponse;
+import com.claimcheck.backend.dto.EvidenceResponse;
 import com.claimcheck.backend.dto.VerificationHistoryResponse;
 import com.claimcheck.backend.dto.ClaimAnalysisResponse;
 import com.claimcheck.backend.dto.ClaimRequest;
@@ -7,9 +10,11 @@ import com.claimcheck.backend.dto.DecomposedClaim;
 import com.claimcheck.backend.entity.Claim;
 import com.claimcheck.backend.entity.ClaimType;
 import com.claimcheck.backend.entity.Evidence;
-import com.claimcheck.backend.repository.ClaimRepository;
-import org.springframework.stereotype.Service;
 import com.claimcheck.backend.entity.VerificationHistory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import com.claimcheck.backend.repository.ClaimRepository;
+import com.claimcheck.backend.repository.EvidenceRepository;
 import com.claimcheck.backend.repository.VerificationHistoryRepository;
 import com.claimcheck.backend.exception.ClaimNotFoundException;
 
@@ -25,22 +30,31 @@ public class ClaimService {
     private final VerificationHistoryRepository verificationHistoryRepository;
     private final ClaimDecompositionService claimDecompositionService;
     private final EvidenceRetrievalService evidenceRetrievalService;
+    private final ExternalEvidenceRetrievalService externalEvidenceRetrievalService;
     private final EvidenceComparisonService evidenceComparisonService;
+    private final SourceCredibilityService sourceCredibilityService;
+    private final EvidenceRepository evidenceRepository;
 
     public ClaimService(
         ClaimRepository claimRepository,
         ClaimClassifierService claimClassifierService,
         ClaimDecompositionService claimDecompositionService,
         EvidenceRetrievalService evidenceRetrievalService,
+        ExternalEvidenceRetrievalService externalEvidenceRetrievalService,
         EvidenceComparisonService evidenceComparisonService,
-        VerificationHistoryRepository verificationHistoryRepository) {
+        SourceCredibilityService sourceCredibilityService,
+        VerificationHistoryRepository verificationHistoryRepository,
+        EvidenceRepository evidenceRepository) {
 
         this.claimRepository = claimRepository;
         this.claimClassifierService = claimClassifierService;
         this.claimDecompositionService = claimDecompositionService;
         this.evidenceRetrievalService = evidenceRetrievalService;
+        this.externalEvidenceRetrievalService =externalEvidenceRetrievalService;
         this.evidenceComparisonService = evidenceComparisonService;
+        this.sourceCredibilityService = sourceCredibilityService;
         this.verificationHistoryRepository = verificationHistoryRepository;
+        this.evidenceRepository = evidenceRepository;
     }
 
     public ClaimAnalysisResponse analyzeClaim(ClaimRequest request) {
@@ -75,6 +89,49 @@ public class ClaimService {
                         savedClaim.getId()
                 );
 
+        List<Evidence> externalEvidence =
+                externalEvidenceRetrievalService.searchWikipedia(
+                        savedClaim.getStatement(),
+                        savedClaim
+                );     
+
+        evidenceList = new ArrayList<>(evidenceList);
+        evidenceList.addAll(externalEvidence);
+
+        List<EvidenceResponse> evidenceResponses =
+        evidenceList.stream()
+                .map(item -> new EvidenceResponse(
+                        item.getId(),
+                        item.getClaim().getId(),
+                        item.getContent(),
+                        item.getUrl(),
+                        item.getTitle(),
+                        item.getSourceName()
+                ))
+                .toList();
+
+        List<SourceCredibilityResponse> sourceResponses =
+                evidenceList.stream()
+                        .map(item -> {
+
+                                String sourceType =
+                                        item.getSourceName() != null
+                                                && item.getSourceName().equalsIgnoreCase("Wikipedia")
+                                        ? "ENCYCLOPEDIA"
+                                        : "OTHER";
+
+                                double credibilityScore =
+                                        sourceCredibilityService.calculateScore(sourceType);
+
+                                return new SourceCredibilityResponse(
+                                        item.getSourceName(),
+                                        sourceType,
+                                        credibilityScore
+                                );
+                        })
+                        .distinct()
+                        .toList();
+
         // Compare claim with retrieved evidence
         String verdict =
                 evidenceComparisonService.compare(
@@ -100,13 +157,15 @@ public class ClaimService {
         verificationHistoryRepository.save(history);
 
         return new ClaimAnalysisResponse(
-                savedClaim.getId(),
-                savedClaim.getStatement(),
+                claim.getId(),
+                claim.getStatement(),
                 claimType.name(),
                 decomposedClaims,
                 verdict,
                 confidence,
-                explanation
+                explanation,
+                evidenceResponses,
+                sourceResponses
         );
     }
 
@@ -186,6 +245,49 @@ public class ClaimService {
                         claim.getId()
                 );
 
+        List<Evidence> externalEvidence =
+                externalEvidenceRetrievalService.searchWikipedia(
+                        claim.getStatement(),
+                        claim
+                );
+
+        evidenceList = new ArrayList<>(evidenceList);
+        evidenceList.addAll(externalEvidence);
+
+        List<EvidenceResponse> evidenceResponses =
+        evidenceList.stream()
+                .map(item -> new EvidenceResponse(
+                        item.getId(),
+                        item.getClaim().getId(),
+                        item.getContent(),
+                        item.getUrl(),
+                        item.getTitle(),
+                        item.getSourceName()
+                ))
+                .toList();
+
+        List<SourceCredibilityResponse> sourceResponses =
+                evidenceList.stream()
+                        .map(item -> {
+
+                                String sourceType =
+                                        item.getSourceName() != null
+                                                && item.getSourceName().equalsIgnoreCase("Wikipedia")
+                                        ? "ENCYCLOPEDIA"
+                                        : "OTHER";
+
+                                double credibilityScore =
+                                        sourceCredibilityService.calculateScore(sourceType);
+
+                                return new SourceCredibilityResponse(
+                                        item.getSourceName(),
+                                        sourceType,
+                                        credibilityScore
+                                );
+                        })
+                        .distinct()
+                        .toList();
+
         String verdict =
                 evidenceComparisonService.compare(
                         claim.getStatement(),
@@ -215,16 +317,26 @@ public class ClaimService {
                 decomposedClaims,
                 verdict,
                 confidence,
-                explanation
+                explanation,
+                evidenceResponses,
+                sourceResponses
         );  
     }
 
-    public List<Claim> getClaimHistory() {
+    public List<ClaimHistoryResponse> getClaimHistory() {
 
         return claimRepository.findAll(
-            org.springframework.data.domain.Sort
-                    .by(org.springframework.data.domain.Sort.Direction.DESC, "id")
-        );
+                org.springframework.data.domain.Sort.by(
+                        org.springframework.data.domain.Sort.Direction.DESC,
+                        "id"
+                )
+        )
+        .stream()
+        .map(claim -> new ClaimHistoryResponse(
+                claim.getId(),
+                claim.getStatement()
+        ))
+        .toList();
     }
 
     public List<VerificationHistoryResponse> getVerificationHistory(Long claimId) {
@@ -244,5 +356,21 @@ public class ClaimService {
                         record.getVerifiedAt()
                 ))
                 .toList();
+    }
+
+    @Transactional
+    public void deleteClaim(Long claimId) {
+
+        Claim claim = claimRepository.findById(claimId)
+                .orElseThrow(() ->
+                        new ClaimNotFoundException(
+                                "Claim not found with id: " + claimId
+                        ));
+
+        verificationHistoryRepository.deleteByClaimId(claimId);
+
+        evidenceRepository.deleteByClaimId(claimId);
+
+        claimRepository.delete(claim);
     }
 }

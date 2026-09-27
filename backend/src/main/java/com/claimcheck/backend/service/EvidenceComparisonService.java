@@ -14,19 +14,16 @@ public class EvidenceComparisonService {
             return "INSUFFICIENT_EVIDENCE";
         }
 
-        String claimText = claim.toLowerCase();
+        String claimText = claim.toLowerCase().trim();
 
         boolean supported = false;
         boolean contradicted = false;
 
         for (Evidence evidence : evidenceList) {
 
-            String evidenceText = evidence.getContent().toLowerCase();
+            String evidenceText =
+                    evidence.getContent().toLowerCase();
 
-            /*
-             * Check contradiction first when the evidence
-             * explicitly says the claim is false or incorrect.
-             */
             if (contradictsClaim(claimText, evidenceText)) {
                 contradicted = true;
                 continue;
@@ -41,44 +38,156 @@ public class EvidenceComparisonService {
             return "MIXED";
         }
 
-        if (supported) {
-            return "SUPPORTED";
-        }
-
         if (contradicted) {
             return "CONTRADICTED";
+        }
+
+        if (supported) {
+            return "SUPPORTED";
         }
 
         return "INSUFFICIENT_EVIDENCE";
     }
 
-    private boolean supportsClaim(String claim, String evidence) {
+    private boolean supportsClaim(
+            String claim,
+            String evidence) {
 
         /*
-         * Specific semantic relationship:
-         *
-         * Claim:
-         * "The Earth is round."
-         *
-         * Evidence:
-         * "The Earth is approximately spherical."
+         * Earth is round
          */
-        if (claim.contains("earth") && claim.contains("round")) {
+        if (claim.contains("earth")
+                && (claim.contains("round")
+                || claim.contains("spherical"))) {
 
             return evidence.contains("earth")
-                    && (evidence.contains("spherical")
-                    || evidence.contains("sphere")
-                    || evidence.contains("round"));
+                    && (evidence.contains("spherical earth")
+                    || evidence.contains("spherical shape")
+                    || evidence.contains("spherical")
+                    || evidence.contains("sphericity"));
         }
 
         /*
-         * Avoid treating reversed relationships as support.
+         * Earth is flat
          *
-         * Claim:
-         * "The Sun revolves around the Earth."
+         * We do not consider the words "earth" and "flat"
+         * alone as evidence.
+         */
+        if (claim.contains("earth")
+                && claim.contains("flat")) {
+
+            return evidence.contains("earth")
+                    && evidence.contains("flat")
+                    && (evidence.contains("flat earth")
+                    || evidence.contains("earth is flat"))
+                    && !containsContradictionPhrase(evidence);
+        }
+
+        /*
+         * Sun revolves around Earth
+         */
+        if (claim.contains("sun")
+                && claim.contains("revolves")
+                && claim.contains("earth")) {
+
+            return false;
+        }
+
+        /*
+         * Generic matching.
          *
-         * Evidence:
-         * "The Earth revolves around the Sun."
+         * Require at least three meaningful matching words
+         * instead of only two.
+         */
+        String[] importantWords =
+                claim.split("\\W+");
+
+        int meaningfulWords = 0;
+        int matches = 0;
+
+        for (String word : importantWords) {
+
+            if (word.length() < 5) {
+                continue;
+            }
+
+            meaningfulWords++;
+
+            if (evidence.contains(word)
+                    || hasRelatedWord(word, evidence)) {
+
+                matches++;
+            }
+        }
+
+        /*
+         * Do not treat a claim as supported when it has
+         * only one or two meaningful words.
+         */
+        if (meaningfulWords < 3) {
+            return false;
+        }
+
+        /*
+         * At least 60% of meaningful claim words must
+         * appear in the evidence.
+         */
+        return matches >= 3
+                && ((double) matches / meaningfulWords) >= 0.60;
+    }
+
+    private boolean contradictsClaim(
+            String claim,
+            String evidence) {
+
+        /*
+         * Earth is flat
+         */
+        if (claim.contains("earth")
+                && claim.contains("flat")) {
+
+            if (evidence.contains("scientifically disproven")
+                    || evidence.contains("disproven")
+                    || evidence.contains("sphericity")
+                    || evidence.contains("spherical earth")
+                    || evidence.contains("spherical")
+                    || evidence.contains("earth's roundness")
+                    || evidence.contains("earth is round")) {
+
+                return true;
+            }
+        }
+
+        /*
+         * Earth is round
+         */
+        if (claim.contains("earth")
+                && (claim.contains("round")
+                || claim.contains("spherical"))) {
+
+            if (evidence.contains("flat earth")
+                    && (evidence.contains("disproven")
+                    || evidence.contains("false")
+                    || evidence.contains("error"))) {
+
+                return false;
+            }
+        }
+
+        /*
+         * General contradiction indicators
+         */
+        if (evidence.contains("false")
+                || evidence.contains("incorrect")
+                || evidence.contains("not true")
+                || evidence.contains("no evidence")
+                || evidence.contains("disproven")) {
+
+            return true;
+        }
+
+        /*
+         * Sun revolves around Earth
          */
         if (claim.contains("sun")
                 && claim.contains("revolves")
@@ -88,34 +197,27 @@ public class EvidenceComparisonService {
                     && evidence.contains("revolves")
                     && evidence.contains("sun")) {
 
-                return false;
+                return true;
             }
         }
 
-        String[] importantWords = claim.split("\\W+");
-
-        int matches = 0;
-
-        for (String word : importantWords) {
-
-            if (word.length() < 4) {
-                continue;
-            }
-
-            if (evidence.contains(word)) {
-                matches++;
-                continue;
-            }
-
-            if (hasRelatedWord(word, evidence)) {
-                matches++;
-            }
-        }
-
-        return matches >= 2;
+        return false;
     }
 
-    private boolean hasRelatedWord(String word, String evidence) {
+    private boolean containsContradictionPhrase(
+            String evidence) {
+
+        return evidence.contains("disproven")
+                || evidence.contains("false")
+                || evidence.contains("incorrect")
+                || evidence.contains("not true")
+                || evidence.contains("error")
+                || evidence.contains("pseudoscientific");
+    }
+
+    private boolean hasRelatedWord(
+            String word,
+            String evidence) {
 
         return switch (word) {
 
@@ -131,54 +233,19 @@ public class EvidenceComparisonService {
             case "small" -> evidence.contains("little")
                     || evidence.contains("tiny");
 
-            case "buy" -> evidence.contains("purchase")
-                    || evidence.contains("purchased");
-
-            case "purchase" -> evidence.contains("buy")
-                    || evidence.contains("bought");
-
             case "doctor" -> evidence.contains("physician");
 
             case "physician" -> evidence.contains("doctor");
 
+            case "purchase" -> evidence.contains("buy")
+                    || evidence.contains("bought")
+                    || evidence.contains("purchased");
+
+            case "purchased" -> evidence.contains("buy")
+                    || evidence.contains("bought")
+                    || evidence.contains("purchase");
+
             default -> false;
         };
-    }
-
-    private boolean contradictsClaim(String claim, String evidence) {
-
-        /*
-         * Explicit contradiction.
-         */
-        if (evidence.contains("false")
-                || evidence.contains("incorrect")
-                || evidence.contains("not true")
-                || evidence.contains("no evidence")) {
-
-            return true;
-        }
-
-        /*
-         * Detect reversed relationship:
-         *
-         * Claim:
-         * "The Sun revolves around the Earth."
-         *
-         * Evidence:
-         * "The Earth revolves around the Sun."
-         */
-        if (claim.contains("sun")
-                && claim.contains("revolves")
-                && claim.contains("earth")) {
-
-            if (evidence.contains("earth")
-                    && evidence.contains("revolves")
-                    && evidence.contains("sun")) {
-
-                return true;
-            }
-        }
-
-        return false;
     }
 }
