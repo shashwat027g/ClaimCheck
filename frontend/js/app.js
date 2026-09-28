@@ -35,6 +35,51 @@ const logoutButton =
 const profileHistoryButton =
     document.getElementById("profileHistoryButton");
 
+const editProfileButton =
+    document.getElementById("editProfileButton");
+
+const changePasswordButton =
+    document.getElementById("changePasswordButton");
+
+const changePasswordPanel =
+    document.getElementById("changePasswordPanel");
+
+const changePasswordCloseButton =
+    document.getElementById("changePasswordCloseButton");
+
+const changePasswordCancelButton =
+    document.getElementById("changePasswordCancelButton");
+
+const changePasswordForm =
+    document.getElementById("changePasswordForm");
+
+const currentPassword =
+    document.getElementById("currentPassword");
+
+const newPassword =
+    document.getElementById("newPassword");
+
+const confirmPassword =
+    document.getElementById("confirmPassword");
+
+const editProfilePanel =
+    document.getElementById("editProfilePanel");
+
+const editProfileCloseButton =
+    document.getElementById("editProfileCloseButton");
+
+const editProfileCancelButton =
+    document.getElementById("editProfileCancelButton");
+
+const editProfileForm =
+    document.getElementById("editProfileForm");
+
+const editProfileName =
+    document.getElementById("editProfileName");
+
+const editProfileEmail =
+    document.getElementById("editProfileEmail");
+
 const accountButton = document.getElementById("accountButton");
 const accountDetailsPanel = document.getElementById("accountDetailsPanel");
 const accountCloseButton = document.getElementById("accountCloseButton");
@@ -81,6 +126,55 @@ function updateAccountUI() {
     profileLargeAvatar.textContent = firstLetter;
 }
 
+// Show profile notification
+
+function showProfileNotification(message, type = "success") {
+
+  const notification = document.createElement("div");
+
+  notification.className =
+      `profile-notification ${type}`;
+
+  let title = "Success";
+  let icon = "✓";
+
+  if (type === "error") {
+    title = "Error";
+    icon = "!";
+  }
+
+  if (type === "warning") {
+    title = "Warning";
+    icon = "!";
+  }
+
+  notification.innerHTML = `
+    <div class="profile-notification-icon">
+      ${icon}
+    </div>
+
+    <div class="profile-notification-content">
+      <strong>${title}</strong>
+      <span>${message}</span>
+    </div>
+  `;
+
+  document.body.appendChild(notification);
+
+  requestAnimationFrame(() => {
+    notification.classList.add("show");
+  });
+
+  setTimeout(() => {
+
+    notification.classList.remove("show");
+
+    setTimeout(() => {
+      notification.remove();
+    }, 300);
+
+  }, 3000);
+}
 
 // Open / close profile dropdown
 
@@ -189,6 +283,304 @@ accountCloseButton.addEventListener("click", () => {
 accountDoneButton.addEventListener("click", () => {
   accountDetailsPanel.hidden = true;
   document.body.classList.remove("account-modal-open");
+});
+
+// Edit profile panel
+
+editProfileButton.addEventListener("click", () => {
+
+  const userName =
+      localStorage.getItem("claimcheckUserName") || "";
+
+  const userEmail =
+      localStorage.getItem("claimcheckUser") || "";
+
+  editProfileName.value = userName;
+  editProfileEmail.value = userEmail;
+  profileDropdown.hidden = true;
+  editProfilePanel.hidden = false;
+  document.body.classList.add("account-modal-open");
+  editProfileName.focus();
+});
+
+function closeEditProfile() {
+  editProfilePanel.hidden = true;
+  document.body.classList.remove("account-modal-open");
+}
+
+editProfileCloseButton.addEventListener(
+  "click",
+  closeEditProfile
+);
+
+editProfileCancelButton.addEventListener(
+  "click",
+  closeEditProfile
+);
+
+// Change password panel
+
+changePasswordButton.addEventListener("click", () => {
+
+  currentPassword.value = "";
+  newPassword.value = "";
+  confirmPassword.value = "";
+
+  profileDropdown.hidden = true;
+
+  changePasswordPanel.hidden = false;
+
+  document.body.classList.add("account-modal-open");
+
+  currentPassword.focus();
+});
+
+
+function closeChangePassword() {
+
+  changePasswordPanel.hidden = true;
+
+  document.body.classList.remove("account-modal-open");
+}
+
+
+changePasswordCloseButton.addEventListener(
+  "click",
+  closeChangePassword
+);
+
+
+changePasswordCancelButton.addEventListener(
+  "click",
+  closeChangePassword
+);
+
+// Password visibility toggle
+
+document.querySelectorAll(".password-toggle").forEach((button) => {
+
+  button.addEventListener("click", () => {
+
+    const targetId = button.dataset.target;
+    const input = document.getElementById(targetId);
+
+    if (input.type === "password") {
+
+      input.type = "text";
+      button.textContent = "🙈";
+
+    } else {
+
+      input.type = "password";
+      button.textContent = "👁";
+
+    }
+
+  });
+
+});
+
+// Change password form submission
+
+changePasswordForm.addEventListener("submit", async (event) => {
+
+  event.preventDefault();
+
+  const userId =
+      localStorage.getItem("claimcheckUserId");
+
+  const current =
+      currentPassword.value;
+
+  const newPass =
+      newPassword.value;
+
+  const confirm =
+      confirmPassword.value;
+
+
+  if (!userId) {
+
+    showProfileNotification(
+      "Please log in again.",
+      "error"
+    );
+    return;
+
+  }
+
+
+  if (newPass !== confirm) {
+
+    showProfileNotification(
+      "New password and confirmation password do not match.",
+      "error"
+    );
+    return;
+
+  }
+
+
+  if (newPass.length < 6) {
+
+    showProfileNotification(
+      "New password must be at least 6 characters.",
+      "warning"
+    );
+    return;
+
+  }
+
+
+  const saveButton =
+      changePasswordForm.querySelector(
+        ".change-password-save"
+      );
+
+  const originalText =
+      saveButton.textContent;
+
+  saveButton.disabled = true;
+  saveButton.textContent = "Changing...";
+
+
+  try {
+
+    const response = await fetch(
+      `http://localhost:8080/api/auth/password/${userId}`,
+      {
+        method: "PUT",
+
+        headers: {
+          "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+          currentPassword: current,
+          newPassword: newPass
+        })
+      }
+    );
+
+
+    const result = await response.json();
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        result.message ||
+        "Failed to change password."
+      );
+
+    }
+
+
+    showProfileNotification(
+      "Password changed successfully.",
+      "success"
+    );
+
+    changePasswordForm.reset();
+
+    closeChangePassword();
+
+
+  } catch (error) {
+
+    console.error(
+      "Change password error:",
+      error
+    );
+
+    showProfileNotification(
+      error.message ||
+      "Unable to change password. Please try again.",
+      "error"
+    );
+
+  } finally {
+    saveButton.disabled = false;
+    saveButton.textContent = originalText;
+  }
+
+});
+
+editProfileForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  const newName = editProfileName.value.trim();
+  const newEmail = editProfileEmail.value.trim();
+
+  const userId = localStorage.getItem("claimcheckUserId");
+
+  if (!newName || !newEmail || !userId) {
+    return;
+  }
+
+  const saveButton =
+      editProfileForm.querySelector(".edit-profile-save");
+
+  const originalButtonText = saveButton.textContent;
+
+  saveButton.disabled = true;
+  saveButton.textContent = "Saving...";
+
+  try {
+
+    const response = await fetch(
+      `http://localhost:8080/api/auth/profile/${userId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          name: newName,
+          email: newEmail
+        })
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        result.message || "Failed to update profile."
+      );
+    }
+
+    // Update saved login information
+    localStorage.setItem(
+      "claimcheckUserName",
+      result.name
+    );
+
+    localStorage.setItem(
+      "claimcheckUser",
+      result.email
+    );
+
+    // Refresh profile UI
+    updateAccountUI();
+
+    closeEditProfile();
+
+  } catch (error) {
+
+    console.error("Profile update error:", error);
+
+    showProfileNotification(
+      error.message ||
+      "Unable to update your profile. Please try again.",
+      "error"
+    );
+
+  } finally {
+
+    saveButton.disabled = false;
+    saveButton.textContent = originalButtonText;
+  }
 });
 
 
